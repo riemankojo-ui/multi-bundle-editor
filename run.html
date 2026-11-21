@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Build log - Multi Bundle</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+:root{--bg:#0b0c0f;--card:#14151a;--line:#25262d;--mut:#8f919b;--red:#f01424;--green:#2fd27a;--txt:#fff}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,sans-serif}
+body{background:radial-gradient(120% 50% at 0% 0%,rgba(240,20,36,.16),transparent 60%),var(--bg);background-attachment:fixed}
+.btn{width:100%;height:54px;border:0;border-radius:15px;background:linear-gradient(135deg,#f01424,#c40d1b);color:#fff;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 8px 24px rgba(240,20,36,.3)}
+.btn:disabled{opacity:.45;box-shadow:none}
+.btn.ghost{background:#1b1c22;border:1px solid #2c2d35;box-shadow:none;height:48px;font-size:14px}
+a.btn{display:grid;place-items:center;text-decoration:none}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);transform:translateX(-50%);background:#23242b;border:1px solid #34353d;color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;z-index:20;max-width:90%;text-align:center}
+.runpage{position:fixed;inset:0;z-index:30;background:#000;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px calc(env(safe-area-inset-bottom,0px) + 12px)}
+.rh{display:flex;align-items:center;gap:10px;padding:2px 0 12px}
+.rh button{width:42px;height:42px;border:1px solid #2c2d35;background:#111;color:#fff;font-size:24px;line-height:1;border-radius:0;cursor:pointer}
+.rh .nm{flex:1;min-width:0;font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rh .nm small{display:block;color:#8f919b;font-weight:600;font-size:11px;overflow:hidden;text-overflow:ellipsis}
+.rh .tm{font:700 15px ui-monospace,Menlo,monospace;color:#c9cad1;font-variant-numeric:tabular-nums}
+.rs{display:flex;justify-content:space-between;font:800 12px ui-monospace,Menlo,monospace;letter-spacing:2px;margin:0 0 6px;color:#ffd166}
+.rs.ok{color:var(--green)}.rs.no{color:#ff5a66}
+.rs b{color:#fff}
+.rbar{height:6px;background:#1a1b20;margin-bottom:10px}
+.rbar div{height:100%;width:0;background:var(--red);transition:width .8s}
+.rbar.ok div{background:var(--green)}
+.term{flex:1;min-height:0;overflow:auto;background:#050607;border:1px solid #3a3b44;border-radius:0;padding:12px;font:12.5px/1.65 ui-monospace,Menlo,Consolas,monospace;color:#d7d8de;-webkit-overflow-scrolling:touch}
+.ln{display:block;white-space:pre-wrap;overflow-wrap:anywhere}
+.ln span{color:#5f616b;margin-right:8px}
+.ln.step{color:#fff;font-weight:700}
+.ln.step:before{content:"\25B6  ";color:var(--red)}
+.ln.ok{color:var(--green)}
+.ln.err{color:#ff5a66;border-left:3px solid var(--red);padding-left:8px;margin:4px 0}
+.ln.dim{color:#7d7f89}
+.ln.live{color:#ffd166;margin-top:6px}
+.ln.live:after{content:"_";animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+.ract{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.ract .btn{border-radius:0;height:50px;font-size:14px;box-shadow:none}
+.ract .btn.ghost:disabled{opacity:.35}
+.lk{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 18px}
+.lk a,.lk button{border:0;background:none;color:#8f919b;font:700 12px system-ui,sans-serif;padding:8px 2px;cursor:pointer;text-decoration:none}
+.lk a:active,.lk button:active{color:#f01424}
+.lk a.dl{color:#fff;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.ract .row{display:flex;gap:8px}.ract .row .btn{flex:1}
+.runpage{background:radial-gradient(120% 50% at 0% 0%,rgba(240,20,36,.16),transparent 60%),#0b0c0f;padding:0 0 calc(env(safe-area-inset-bottom,0px) + 12px)}
+.rh{padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;background:rgba(11,12,15,.86);border-bottom:1px solid #25262d;margin-bottom:12px}
+.rh button{width:40px;height:40px;border-radius:12px;background:#14151a;border:1px solid #25262d}
+.rs,.rbar,.term,.ract{margin-left:14px;margin-right:14px}
+.rbar{border-radius:99px;overflow:hidden;background:#1b1c22}
+.term{border-radius:12px}
+.ract .btn{border-radius:15px}
+.ract .btn.ghost{border-radius:14px}
+.lk a.dl{transition:color .2s ease,text-decoration-color .2s ease}
+.runpage{background:#000}
+.rh{background:#000;border-bottom:0}
+.term{background:#000}
+.lk a.dl:active,.lk a.dl:focus{color:#f01424;text-decoration-color:#f01424}
+</style>
+<script src="apk-save.js"></script>
+<script src="/topbar.js"></script>
+</head>
+<body>
+<section class="runpage">
+  <div class="rh"><button id="rBack" aria-label="Back">&#8249;</button><div class="nm"><span id="rApp">App</span><small id="rRepo"></small></div><div class="tm" id="rTime">0:00</div></div>
+  <div class="rs"><span id="rState">RUNNING</span><b id="rPct">0%</b></div>
+  <div class="rbar"><div id="rBar"></div></div>
+  <div class="term" id="term"><div class="ln live" id="live"></div></div>
+  <div class="ract" id="ract"></div>
+</section>
+<div class="toast" id="toast" hidden></div>
+<script>
+(function(){
+'use strict';
+var WF='build-apk.yml',WF_PATH='.github/workflows/'+WF;
+var YML=[
+'name: Build APK',
+'on:',
+'  workflow_dispatch:',
+'    inputs:',
+'      app_name:',
+'        description: App name',
+'        required: true',
+'        default: App',
+'      app_id:',
+'        description: Package ID',
+'        required: true',
+'        default: com.example.app',
+'      version:',
+'        description: Version',
+'        required: true',
+'        default: 1.0.0',
+'permissions:',
+'  contents: write',
+'jobs:',
+'  apk:',
+'    runs-on: ubuntu-latest',
+'    env:',
+'      APP_NAME: ${{ inputs.app_name }}',
+'      APP_ID: ${{ inputs.app_id }}',
+'      VERSION: ${{ inputs.version }}',
+'      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}',
+'      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}',
+'    steps:',
+'      - uses: actions/checkout@v4',
+'      - uses: actions/setup-node@v4',
+'        with:',
+'          node-version: 22',
+'      - uses: actions/setup-java@v4',
+'        with:',
+'          distribution: temurin',
+'          java-version: 21',
+'      - name: Prepare web files',
+'        run: |',
+'          mkdir -p "$RUNNER_TEMP/www"',
+'          if [ -f package.json ] && grep -q \'"build"\' package.json; then',
+'            npm install',
+'            npm run build',
+'            if [ -d dist ]; then cp -r dist/. "$RUNNER_TEMP/www/"; else cp -r build/. "$RUNNER_TEMP/www/"; fi',
+'          else',
+'            tar --exclude=.git --exclude=.github -cf - . | tar -xf - -C "$RUNNER_TEMP/www"',
+'          fi',
+'      - name: Create Android project',
+'        run: |',
+'          mkdir "$RUNNER_TEMP/cap"',
+'          cd "$RUNNER_TEMP/cap"',
+'          npm init -y',
+'          npm install @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8',
+'          mv "$RUNNER_TEMP/www" www',
+'          npx cap init "$APP_NAME" "$APP_ID" --web-dir www',
+'          npx cap add android',
+'          if [ -f "$GITHUB_WORKSPACE/FolderAccessPlugin.java" ]; then',
+'            PKG_DIR="android/app/src/main/java/$(echo "$APP_ID" | tr . /)"',
+'            mkdir -p "$PKG_DIR"',
+'            sed "s/^package .*/package $APP_ID;/" "$GITHUB_WORKSPACE/FolderAccessPlugin.java" > "$PKG_DIR/FolderAccessPlugin.java"',
+'            printf \'%s\\n\' "package $APP_ID;" "" "import android.os.Bundle;" "import com.getcapacitor.BridgeActivity;" "" "public class MainActivity extends BridgeActivity {" "    @Override" "    public void onCreate(Bundle savedInstanceState) {" "        registerPlugin(FolderAccessPlugin.class);" "        super.onCreate(savedInstanceState);" "    }" "}" > "$PKG_DIR/MainActivity.java"',
+'          fi',
+'          npx cap sync android',
+'          sed -i "s/versionName \\".*\\"/versionName \\"$VERSION\\"/; s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" android/app/build.gradle',
+'      - name: Build debug APK',
+'        run: |',
+'          cd "$RUNNER_TEMP/cap/android"',
+'          chmod +x gradlew',
+'          ./gradlew assembleDebug',
+'      - name: Publish release',
+'        env:',
+'          GH_TOKEN: ${{ github.token }}',
+'        run: |',
+'          SAFE=$(printf "%s" "$APP_NAME" | tr -c "A-Za-z0-9._-" "-" | sed "s/--*/-/g; s/^-//; s/-$//"); [ -n "$SAFE" ] || SAFE=app',
+'          cp "$RUNNER_TEMP/cap/android/app/build/outputs/apk/debug/app-debug.apk" "$RUNNER_TEMP/$SAFE.apk"',
+'          gh release create "apk-${{ github.run_number }}" "$RUNNER_TEMP/$SAFE.apk" --title "APK build ${{ github.run_number }}" --notes "$APP_NAME $VERSION" --target "$GITHUB_SHA"',
+''].join('\n');
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function tk(){try{return sessionStorage.getItem('mb_apk_tk')||localStorage.getItem('mb_apk_tk')||localStorage.getItem('mb_gh_active_token')||''}catch(e){return ''}}
+var LOG=function(){};
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function b64u(s){return btoa(unescape(encodeURIComponent(s)))}
+function fromB64u(s){return decodeURIComponent(escape(atob(s.replace(/\s/g,''))))}
+async function gh(method,path,body){
+  if(method==='PUT'&&/\/contents\//.test(path)&&localStorage.getItem('mb_ed_autocreate')==='0'){var ge=new Error('Auto Create Files is off. Turn it on in Editor settings (gear button) to let the app add workflow files to GitHub.');ge.status=0;throw ge}
+  var r=await fetch('https://api.github.com'+path,{method:method,headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+tk(),'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  var d=null;try{d=await r.json()}catch(e){}
+  if(!r.ok||method!=='GET')LOG(method+' '+path.split('?')[0]+' -> '+r.status+(r.ok?'':' '+((d&&d.message)||'')),r.ok?'dim':'err');
+  if(!r.ok){var er=new Error((d&&d.message)||('HTTP '+r.status));er.status=r.status;throw er}
+  return d;
+}
+function defId(repo){
+  var pr=(repo||'').split('/');
+  var o=(pr[0]||'me').toLowerCase().replace(/[^a-z0-9]/g,'');
+  var n=(pr[1]||'app').toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!/^[a-z]/.test(o))o='x'+o;
+  if(!/^[a-z]/.test(n))n='a'+n;
+  return 'com.'+o+'.'+n;
+}
+
+var S={stop:false};
+function chk(){if(S.stop)throw new Error('stopped')}
+
+function fixBuild(s,notes){
+  var m,ind;
+  if(!/www\/index\.html/.test(s)){
+    var r1=/^([ \t]*)if \[ -f package\.json \] && grep -q '"build"' package\.json; then[ \t]*$/m;
+    if((m=r1.exec(s))){
+      ind=m[1];
+      s=s.replace(r1,function(){return ind+'if [ -f www/index.html ]; then\n'+ind+'  cp -r www/. "$RUNNER_TEMP/www/"\n'+ind+'elif [ -f package.json ] && grep -q \'"build"\' package.json; then'});
+      notes.push('Use the www folder when it has an index.html');
+    }
+  }
+  if(!/native\/patch\.py/.test(s)){
+    var r2=/^([ \t]*)if \[ -f "\$GITHUB_WORKSPACE\/FolderAccessPlugin\.java" \]; then[ \t]*$/m;
+    if((m=r2.exec(s))){
+      ind=m[1];
+      var B=[
+        'if [ -d "$GITHUB_WORKSPACE/native" ]; then',
+        '  cp -r "$GITHUB_WORKSPACE/native" native',
+        '  sed -i "s/^package .*;/package $APP_ID;/" native/*.java',
+        '  sed -i "s|com/rieman/softplayer|$(echo "$APP_ID" | tr . /)|" native/patch.py',
+        '  python3 native/patch.py',
+        '  if [ -f native/icon.py ]; then python3 native/icon.py; fi',
+        '  sed -i "s|mavenCentral()|mavenCentral()\\n        maven { url \'https://jitpack.io\' }|g" android/build.gradle',
+        '  npm install @capacitor/app@8',
+        'fi'
+      ].map(function(l){return ind+l}).join('\n');
+      s=s.replace(r2,function(x){return B+'\n'+x});
+      notes.push('Added your native plugin files to the Android project');
+    }
+  }
+  return s;
+}
+function fixWf(t){
+  var notes=[],s=t.replace(/\r\n?/g,'\n'),i,L;
+  if(/^[ ]*\t/m.test(s)){s=s.replace(/^([ ]*)(\t+)/gm,function(m,a,b){return a+new Array(b.length+1).join('  ')});notes.push('Replaced tab indents with spaces')}
+  s=fixBuild(s,notes);
+  if(!/^[^#\n]*workflow_dispatch/m.test(s)){
+    var m;
+    if((m=/^(["']?on["']?):[ \t]*$/m.exec(s))){
+      var at=m.index+m[0].length+1,nx=s.slice(at).match(/^([ \t]+)\S/);
+      s=s.slice(0,at)+(nx?nx[1]:'  ')+'workflow_dispatch:\n'+s.slice(at);
+    }else if((m=/^(["']?on["']?):[ \t]*\[([^\]\n]*)\][ \t]*$/m.exec(s))){
+      s=s.replace(m[0],m[1]+': ['+(m[2].trim()?m[2].trim()+', ':'')+'workflow_dispatch]');
+    }else if((m=/^(["']?on["']?):[ \t]*([A-Za-z_]+)[ \t]*$/m.exec(s))){
+      s=s.replace(m[0],m[1]+':\n  '+m[2]+':\n  workflow_dispatch:');
+    }else return {text:t,notes:notes,blocked:'Could not find the "on:" section in the workflow'};
+    notes.push('Added workflow_dispatch so it can be started from the app');
+  }
+  if(!/gh\s+release\s+create|action-gh-release|create-release|release-action|gh\s+api[^\n]*releases/.test(s)){
+    if(!/upload-artifact/.test(s))return {text:t,notes:notes,blocked:'This workflow neither publishes a release nor uploads the APK, so the app cannot find it'};
+    L=s.split('\n');
+    var j=-1;for(i=0;i<L.length;i++)if(/^jobs:[ \t]*$/.test(L[i])){j=i;break}
+    if(j<0)return {text:t,notes:notes,blocked:'Could not find the "jobs:" section'};
+    var ji='  ',e=L.length,ids=[];
+    for(i=j+1;i<L.length;i++){if(/\S/.test(L[i])&&!/^\s*#/.test(L[i])){ji=L[i].match(/^[ ]*/)[0];break}}
+    for(i=j+1;i<L.length;i++){
+      if(/^[^\s#]/.test(L[i])){e=i;break}
+      var jm=L[i].match(/^([ ]*)([A-Za-z0-9_-]+):[ \t]*$/);
+      if(jm&&jm[1]===ji)ids.push(jm[2]);
+    }
+    if(!ids.length)return {text:t,notes:notes,blocked:'Could not read the job names'};
+    while(e>0&&!/\S/.test(L[e-1]))e--;
+    var job=[
+      ji+'mb_publish:',
+      ji+'  needs: ['+ids.join(', ')+']',
+      ji+'  runs-on: ubuntu-latest',
+      ji+'  permissions:',
+      ji+'    contents: write',
+      ji+'  steps:',
+      ji+'    - uses: actions/download-artifact@v4',
+      ji+'      with:',
+      ji+'        path: mb_out',
+      ji+'    - name: Publish release',
+      ji+'      env:',
+      ji+'        GH_TOKEN: ${{ github.token }}',
+      ji+'        GH_REPO: ${{ github.repository }}',
+      ji+'      run: |',
+      ji+'        APK=$(find mb_out -name "*.apk" | head -1)',
+      ji+'        if [ -z "$APK" ]; then echo "No APK found in the artifacts"; exit 1; fi',
+      ji+'        N="${{ github.event.repository.name }}.apk"',
+      ji+'        cp "$APK" "$N"',
+      ji+'        gh release create "apk-${{ github.run_number }}" "$N" --title "APK build ${{ github.run_number }}" --notes "Built with Multi Bundle" --target "$GITHUB_SHA"'
+    ];
+    L.splice.apply(L,[e,0].concat(job));
+    s=L.join('\n');
+    notes.push('Added a step that publishes the APK as release apk-N');
+  }
+  if(s.slice(-1)!=='\n')s+='\n';
+  return {text:s,notes:notes,blocked:null};
+}
+
+async function build(p,v,say){
+  var repo=p.githubRepo,br=p.githubBranch||'main';
+  say('Checking repo\u2026');
+  var info=await gh('GET','/repos/'+repo);
+  if(info.permissions&&info.permissions.push===false)throw new Error('Your GitHub account cannot write to '+repo+'.');
+  try{
+    var tr=await gh('GET','/repos/'+repo+'/git/trees/'+encodeURIComponent(br)+'?recursive=1');
+    var fl=(tr.tree||[]).filter(function(x){return x.type==='blob'&&!/^(node_modules|android\/app\/build)\//.test(x.path)});
+    var has=function(re){return fl.find(function(x){return re.test(x.path)})};
+    var kb=function(x){return x&&x.size?' ('+Math.max(1,Math.round(x.size/1024))+' KB)':''};
+    LOG('Repo has '+fl.length+' files','dim');
+    var lg=has(/^(logo|icon|favicon)[^\/]*\.(png|jpe?g|webp|svg)$/i)||has(/(^|\/)(logo|icon)[^\/]*\.(png|jpe?g|webp|svg)$/i);
+    if(lg)LOG('Logo is good: '+lg.path+kb(lg),'ok');else LOG('No logo found, the app will use the default icon','err');
+    var ix=has(/(^|\/)index\.html$/i);
+    if(ix)LOG('Web app is good: '+ix.path,'ok');else LOG('No index.html found in the repo','err');
+    var cc=has(/^capacitor\.config\.(json|ts|js)$/i);
+    if(cc)LOG('Capacitor config is good: '+cc.path,'ok');else LOG('No capacitor config yet, it will be created','dim');
+    var mf=has(/(^|\/)manifest\.json$/i);
+    if(mf)LOG('Manifest is good: '+mf.path,'ok');
+    if(has(/^native\//))LOG('Native plugin files found','ok');
+  }catch(e){LOG('Could not check the repo files: '+((e&&e.message)||'error'),'dim')}
+  chk();
+  var cur=null;
+  try{cur=await gh('GET','/repos/'+repo+'/contents/'+WF_PATH+'?ref='+encodeURIComponent(br))}catch(e){if(e.status!==404)throw e}
+  var same=false;
+  try{same=!!(cur&&cur.content&&fromB64u(cur.content)===YML)}catch(e){}
+  var hasIn=(WF==='build-apk.yml'&&!cur);try{if(cur&&cur.content&&/app_name/.test(fromB64u(cur.content)))hasIn=true}catch(e){}
+  if(cur&&cur.content){
+    var fx=null,orig='';
+    try{orig=fromB64u(cur.content);if(localStorage.getItem('mb_ed_autofix')!=='0')fx=fixWf(orig)}catch(e){}
+    if(fx&&fx.blocked)return {fail:true,run:'https://github.com/'+repo+'/blob/'+br+'/'+WF_PATH,why:fx.blocked};
+    if(fx&&fx.text!==orig.replace(/\r\n?/g,'\n')){
+      say('Adding fixes to your build workflow\u2026');
+      fx.notes.forEach(function(n){LOG(n,'dim')});
+      try{
+        await gh('PUT','/repos/'+repo+'/contents/'+WF_PATH,{message:'Fix build workflow (Multi Bundle)',content:b64u(fx.text),branch:br,sha:cur.sha});
+      }catch(e){
+        if(e.status===404||e.status===403)throw new Error('GitHub refused the workflow file. Sign in again in the GitHub tab so the token has the workflow permission.');
+        throw e;
+      }
+      await sleep(4000);chk();
+    }
+  }
+  if(!cur&&WF==='build-apk.yml'){
+    say('Adding build workflow\u2026');
+    try{
+      await gh('PUT','/repos/'+repo+'/contents/'+WF_PATH,{message:'Add APK build workflow',content:b64u(fixBuild(YML,[])),branch:br,sha:cur?cur.sha:undefined});
+    }catch(e){
+      if(e.status===404||e.status===403)throw new Error('GitHub refused the workflow file. Sign in again in the GitHub tab so the token has the workflow permission.');
+      throw e;
+    }
+    await sleep(4000);chk();
+  }
+  var before=0;
+  try{
+    var r0=await gh('GET','/repos/'+repo+'/actions/workflows/'+WF+'/runs?per_page=5');
+    (r0.workflow_runs||[]).forEach(function(r){if(r.id>before)before=r.id});
+  }catch(e){}
+  say('Starting build\u2026');
+  var ok=false,lastErr=null,i;
+  for(i=0;i<8&&!ok;i++){
+    chk();
+    try{
+      await gh('POST','/repos/'+repo+'/actions/workflows/'+WF+'/dispatches',{ref:br,inputs:hasIn?{app_name:v.name,app_id:v.id,version:v.ver}:undefined});
+      ok=true;
+    }catch(e){lastErr=e;if(e.status===404||e.status===422)await sleep(3000);else throw e}
+  }
+  if(!ok)throw lastErr||new Error('Could not start the build.');
+  var run=null;
+  for(i=0;i<20&&!run;i++){
+    await sleep(3000);chk();
+    var rs=await gh('GET','/repos/'+repo+'/actions/workflows/'+WF+'/runs?event=workflow_dispatch&per_page=5');
+    run=(rs.workflow_runs||[]).find(function(r){return r.id>before})||null;
+  }
+  if(!run)throw new Error('The build did not start. Check the Actions tab on GitHub.');
+  try{localStorage.setItem('mb_run_'+(q.get('t')||''),String(run.id))}catch(e){}
+  return await watchRun(repo,run,say);
+}
+async function watchRun(repo,run,say){
+  var i,t0=Date.now();
+  while(true){
+    chk();
+    run=await gh('GET','/repos/'+repo+'/actions/runs/'+run.id);
+    var mins=Math.floor((Date.now()-t0)/60000),secs=Math.floor((Date.now()-t0)/1000)%60;
+    if(run.status==='completed')break;
+    say((run.status==='queued'?'Waiting for GitHub to start':'Building APK')+'\u2026 '+mins+'m '+secs+'s (first build takes about 5-8 min)');
+    if(Date.now()-t0>40*60000)throw new Error('The build is taking too long. Check the Actions tab on GitHub.');
+    await sleep(10000);
+  }
+  if(run.conclusion!=='success')return {fail:true,run:run.html_url,why:run.conclusion};
+  var rel=null;
+  for(i=0;i<5&&!rel;i++){
+    try{rel=await gh('GET','/repos/'+repo+'/releases/tags/apk-'+run.run_number)}catch(e){await sleep(3000)}
+  }
+  var asset=rel&&(rel.assets||[]).find(function(a){return /\.apk$/i.test(a.name)});
+  if(!asset)return {fail:true,run:run.html_url,why:'APK file not found in the release'};
+  var want=(v.name||'').replace(/[^A-Za-z0-9._-]+/g,'-').replace(/^-+|-+$/g,'');
+  if(want&&asset.name.toLowerCase()!==(want+'.apk').toLowerCase()){try{asset=await gh('PATCH','/repos/'+repo+'/releases/assets/'+asset.id,{name:want+'.apk'})}catch(e){}}
+  return {url:asset.browser_download_url,run:run.html_url};
+}
+
+/* ---------- run page ---------- */
+var q=new URLSearchParams(location.search);
+var p={id:q.get('pid')||'',name:q.get('name')||'App',githubRepo:q.get('repo')||'',githubBranch:q.get('branch')||'main'};
+WF=q.get('wf')||'build-apk.yml';WF_PATH='.github/workflows/'+WF;
+var v={name:(q.get('aname')||p.name).trim(),id:(q.get('aid')||'').trim().toLowerCase(),ver:(q.get('ver')||'1.0.0').trim()};
+var KH='mb_apk_hist_'+p.id;
+var busy=false,lock=null,tick=null;
+
+function enc(s){return encodeURIComponent(s||'')}
+function formUrl(){return 'apkbuild.html?pid='+enc(p.id)+'&name='+enc(p.name)+'&repo='+enc(p.githubRepo)+'&branch='+enc(p.githubBranch)}
+function toast(t){var el=$('toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},2600)}
+function leave(){S.stop=true;location.href='/'}
+function toForm(){S.stop=true;location.href=formUrl()}
+function loadHist(){try{return JSON.parse(localStorage.getItem(KH)||'[]')}catch(e){return []}}
+function addHist(h){var l=loadHist();l.unshift(h);l=l.slice(0,5);try{localStorage.setItem(KH,JSON.stringify(l))}catch(e){}}
+
+var STEPS=['Checking repository','Adding build workflow','Starting the build','Building the APK'];
+var BASE=[4,12,22,30];
+var t0=Date.now(),t3=0,curStep=-1,pctNow=0,lastMin=-1,wasQ=null,logs=[];
+function ts(){var s=Math.max(0,Math.floor((Date.now()-t0)/1000));return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2)}
+LOG=function(t,k){
+  logs.push('['+ts()+'] '+t);
+  var term=$('term'),d=document.createElement('div');
+  d.className='ln '+(k||'');
+  d.innerHTML='<span>'+ts()+'</span>'+esc(t);
+  term.insertBefore(d,$('live'));
+  term.scrollTop=term.scrollHeight;
+};
+function setPct(x,force){
+  pctNow=force?x:Math.max(pctNow,Math.min(99,Math.round(x)));
+  $('rPct').textContent=pctNow+'%';
+  $('rBar').style.width=pctNow+'%';
+}
+function setState(cls,txt){
+  $('rState').textContent=txt;
+  $('rState').parentNode.className='rs '+cls;
+  document.querySelector('.rbar').className='rbar '+(cls==='ok'?'ok':'');
+}
+function updTime(){
+  $('rTime').textContent=ts();
+  if(curStep===3&&t3)setPct(30+Math.min(65,(Date.now()-t3)/(7*60*1000)*65));
+}
+function live(t){var l=$('live');l.textContent=t;l.style.display=t?'':'none';$('term').scrollTop=$('term').scrollHeight}
+function onSay(t){
+  var st=/^Checking/.test(t)?0:/^Adding/.test(t)?1:/^Starting/.test(t)?2:3;
+  var qd=/^Waiting/.test(t);
+  if(st!==curStep){
+    curStep=st;
+    if(st===3&&!t3)t3=Date.now();
+    LOG(STEPS[st],'step');
+    setPct(BASE[st]);
+  }
+  if(st===3){
+    if(wasQ!==qd){wasQ=qd;LOG(qd?'Waiting for GitHub to give us a runner':'Build is running on GitHub','dim')}
+    var m=/(\d+)m (\d+)s/.exec(t);
+    if(m&&+m[1]>lastMin&&+m[1]>0){lastMin=+m[1];LOG('Still building... '+m[1]+' min','dim')}
+    live(qd?'Waiting for GitHub...':'Building APK... first build takes about 5-8 min');
+  }else live(t.replace(/\u2026$/,'')+'...');
+  updTime();
+}
+async function wake(){try{if(navigator.wakeLock)lock=await navigator.wakeLock.request('screen')}catch(e){}}
+function unwake(){try{if(lock)lock.release()}catch(e){}lock=null}
+function stopRun(){busy=false;clearInterval(tick);unwake();live('')}
+function copy(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast('Copied')},function(){prompt('Copy',t)})}
+  else prompt('Copy',t);
+}
+async function cancelRun(){
+  if(!busy){toForm();return}
+  if(!confirm('Cancel this run on GitHub?'))return;
+  S.cancelled=true;S.stop=true;live('Cancelling...');
+  try{
+    var d=await gh('GET','/repos/'+p.githubRepo+'/actions/workflows/'+WF+'/runs?event=workflow_dispatch&per_page=3');
+    var r=(d.workflow_runs||[]).find(function(x){return x.status!=='completed'});
+    if(r){await gh('POST','/repos/'+p.githubRepo+'/actions/runs/'+r.id+'/cancel');LOG('Cancel sent to GitHub','ok')}
+    else LOG('No active run found on GitHub','dim');
+  }catch(e){LOG('Could not cancel: '+((e&&e.message)||'error'),'err')}
+}
+function acts(primary,secs){
+  /* two clean buttons: Cancel run + Rerun. Other items become quiet links. */
+  var DROP={'Stop watching':1,'Try again':1,'Back to app':1,'Build another':1};
+  var run=secs.some(function(o){return o.t==='Stop watching'});
+  if(primary&&(primary.t==='Try again'||primary.t==='Back to form'))primary=null;
+  var links=secs.filter(function(o){return !DROP[o.t]});
+  var box=$('ract');box.innerHTML='';
+  function mk(o,cls){
+    var el=document.createElement(o.href?'a':'button');
+    el.className=cls;el.textContent=o.t;
+    if(o.href){el.href=o.href;el.target='_blank';el.rel='noopener'}
+    if(o.fn)el.onclick=o.fn;
+    return el;
+  }
+  if(primary&&primary.href&&/^Download/i.test(primary.t)){links.unshift(primary);primary=null}
+if(primary)box.appendChild(mk(primary,'btn'));
+  if(links.length){var lk=document.createElement('div');lk.className='lk';links.forEach(function(o){lk.appendChild(mk(o,/^Download/i.test(o.t)?'dl':''))});box.appendChild(lk)}
+  var row=document.createElement('div');row.className='row';
+  row.appendChild(mk({t:'Cancel run',fn:cancelRun},'btn ghost'));
+  var rr=mk({t:'Rerun',fn:function(){start()}},'btn ghost');rr.disabled=run;
+  row.appendChild(rr);box.appendChild(row);
+}
+function actsOld(primary,secs){
+  var box=$('ract');box.innerHTML='';
+  function mk(o,cls){
+    var el=document.createElement(o.href?'a':'button');
+    el.className='btn '+cls;el.textContent=o.t;
+    if(o.href){el.href=o.href;el.target='_blank';el.rel='noopener'}
+    if(o.fn)el.onclick=o.fn;
+    return el;
+  }
+  if(primary)box.appendChild(mk(primary,''));
+  for(var i=0;i<secs.length;i+=2){
+    var r=document.createElement('div');r.className='row';
+    r.appendChild(mk(secs[i],'ghost'));
+    if(secs[i+1])r.appendChild(mk(secs[i+1],'ghost'));
+    box.appendChild(r);
+  }
+}
+function copyLog(){copy(logs.join('\n'))}
+function hintFor(e){
+  if(!e)return '';
+  if(e.status===401)return 'GitHub rejected the token. Sign in again in the GitHub tab, then retry.';
+  if(e.status===403)return 'GitHub refused access. The token may be missing the repo or workflow permission, or the rate limit was hit.';
+  if(e.status===404)return 'Repo or file not found. Check that the project is published and the token can see it.';
+  if(/Failed to fetch|NetworkError|Load failed/i.test(e.message||''))return 'No internet connection, or GitHub could not be reached.';
+  return '';
+}
+
+async function start(rid){
+  $('rApp').textContent=v.name+'  v'+v.ver;
+  $('rRepo').textContent=p.githubRepo+' \u00b7 '+p.githubBranch+' \u00b7 '+v.id;
+  setState('','RUNNING');setPct(2,true);$('rTime').textContent='0:00';
+  if(!p.githubRepo||!tk()){
+    LOG('ERROR: '+(!p.githubRepo?'No GitHub repo is linked. Publish the project first.':'GitHub is not connected. Sign in on the GitHub tab.'),'err');
+    setState('no','FAILED');acts({t:'Back to form',fn:toForm},[]);return;
+  }
+  S.stop=false;S.cancelled=false;busy=true;t0=Date.now();t3=0;curStep=-1;pctNow=0;lastMin=-1;wasQ=null;logs=[];
+  var term=$('term');Array.prototype.slice.call(term.querySelectorAll('.ln:not(.live)')).forEach(function(n){term.removeChild(n)});
+  acts(null,[{t:'Stop watching',fn:function(){S.stop=true}}]);
+  LOG('Build started for '+v.name+' v'+v.ver,'ok');
+  LOG('Workflow '+WF,'dim');
+  LOG('Package '+v.id,'dim');
+  clearInterval(tick);tick=setInterval(updTime,1000);wake();
+  try{
+    var res=rid?await watchRun(p.githubRepo,await gh('GET','/repos/'+p.githubRepo+'/actions/runs/'+rid),onSay):await build(p,v,onSay);
+    stopRun();
+    try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}
+    if(res.fail){
+      addHist({t:Date.now(),ver:v.ver,ok:false,run:res.run});
+      LOG('BUILD FAILED: '+(res.why||'error'),'err');
+      LOG('Open the build log below and look for the red error lines. Tap "Copy log" to send me this screen.','err');
+      setState('no','FAILED');
+      acts({t:'Open build log on GitHub',href:res.run},[{t:'Copy log',fn:copyLog},{t:'Try again',fn:toForm},{t:'Back to app',fn:leave}]);
+    }else{
+      addHist({t:Date.now(),ver:v.ver,ok:true,url:res.url,run:res.run});
+      LOG('APK is ready','ok');LOG(res.url,'dim');
+      setPct(100,true);setState('ok','DONE');
+      var sec=[{t:'Copy link',fn:function(){copy(res.url)}}];
+      if(navigator.share)sec.push({t:'Share',fn:function(){navigator.share({title:v.name,url:res.url}).catch(function(){})}});
+      sec.push({t:'Build log',href:res.run},{t:'Build another',fn:toForm});
+      acts({t:'Download APK',href:res.url},sec);
+    }
+  }catch(e){
+    stopRun();
+    if(e&&e.message==='stopped'){LOG(S.cancelled?'Run cancelled.':'Stopped. The build keeps running on GitHub.','dim');setState('no',S.cancelled?'CANCELLED':'STOPPED');acts(null,[{t:'Copy log',fn:copyLog}]);return}
+    LOG('ERROR: '+((e&&e.message)||'Something went wrong'),'err');
+    if(e&&e.status)LOG('HTTP status '+e.status,'err');
+    var hint=hintFor(e);if(hint)LOG(hint,'err');
+    setState('no','FAILED');
+    acts({t:'Try again',fn:toForm},[{t:'Copy log',fn:copyLog},{t:'Back to app',fn:leave}]);
+  }
+}
+window.addEventListener('error',function(e){LOG('Script error: '+e.message,'err')});
+window.addEventListener('unhandledrejection',function(e){LOG('Error: '+((e.reason&&e.reason.message)||e.reason),'err')});
+$('rBack').onclick=function(){
+  if(busy){if(confirm('Stop watching this build? It keeps running on GitHub.'))S.stop=true;return}
+  toForm();
+};
+
+/* a refresh must not start a second build */
+var tid=q.get('t')||'',prev='';
+try{prev=sessionStorage.getItem('mb_run_t')||''}catch(e){}
+if(tid&&prev===tid){
+  $('rApp').textContent=v.name+'  v'+v.ver;
+  var rid='';try{rid=localStorage.getItem('mb_run_'+tid)||''}catch(e){}
+  if(rid){start(rid);return}
+  LOG('This build was already started. Open the form to start another one.','dim');
+  setState('no','STOPPED');acts({t:'Back to form',fn:toForm},[]);
+}else{
+  try{sessionStorage.setItem('mb_run_t',tid)}catch(e){}
+  start();
+}
+})();
+</script>
+</body>
+</html>

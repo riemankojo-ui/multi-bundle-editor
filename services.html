@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi Bundle</title>
+<style>
+  :root {
+    --bg: #f4f3ef;
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+    --border: #e5e4df;
+    --white: #ffffff;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* --- TOP HEADER --- */
+  header {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    background-color: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .menu-btn {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    flex-shrink: 0;
+  }
+
+  .menu-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--text);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-left: 16px;
+  }
+
+  /* --- MAIN CONTENT --- */
+  main {
+    padding: 10px 20px 40px;
+    max-width: 600px;
+    margin: 0 auto;
+    /* Empty main content area */
+  }
+
+  /* --- SLIDE OUT MENU --- */
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+    z-index: 99;
+  }
+
+  .overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .drawer {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 280px;
+    height: 100%;
+    background: var(--white);
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.1);
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .drawer.active {
+    transform: translateX(300px);
+  }
+
+  .drawer-header {
+    padding: 0 24px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .drawer-link {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+
+  .drawer-link:active, .drawer-link:hover {
+    background: #f9f9f9;
+  }
+
+  .drawer-link.active {
+    font-weight: 700;
+    color: var(--text);
+    background: #f0f0f0;
+    border-right: 4px solid var(--text);
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card p { font-size: 14px; color: var(--muted); }
+  .method {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: #1a1a1a;
+    color: #fff;
+    margin-right: 8px;
+  }
+  .path { font-family: monospace; font-size: 14px; }
+  .badge {
+    float: right;
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+  .try-btn {
+    margin-top: 12px;
+    background: var(--text);
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .result {
+    margin-top: 12px;
+    background: #f0efe9;
+    border-radius: 10px;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 220px;
+    overflow: auto;
+    display: none;
+  }
+  .key-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 10px;
+    background: #fff;
+  }
+  .key-row {
+    border-top: 1px solid var(--border);
+    padding: 10px 0;
+    font-size: 13px;
+  }
+  .key-row code { font-family: monospace; word-break: break-all; }
+  .del-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    margin-top: 6px;
+    cursor: pointer;
+  }
+  .top-back {
+    margin-left: auto;
+    padding-left: 14px;
+    border-left: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .top-back:active { color: var(--text); }
+  .back-link { border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+  <!-- Header with 3-line menu -->
+  <header>
+    <button class="menu-btn" id="openMenu" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M4 7h16M4 12h16M4 17h16"></path>
+      </svg>
+    </button>
+    <h1>Multi Bundle</h1>
+    <a href="/" class="top-back">Back to app</a>
+  </header>
+
+  <!-- Main Content is now empty -->
+  <main>
+    <section class="page" id="page-services">
+      <style>
+        .sv-small{font-size:12px;color:#666;line-height:1.5;margin:6px 0 0}
+        .sv-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+        .sv-chip{font-size:11px;border:1px solid var(--border);border-radius:999px;padding:3px 9px;color:#444;background:#fff}
+        .sv-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+        .sv-type{font-size:11px;font-family:monospace;border:1px solid var(--border);border-radius:6px;padding:2px 7px;color:#444}
+        .sv-fields{font-size:11px;color:#888;margin-top:8px}
+        .sv-code{font-family:monospace;font-size:11px;background:#f0efeb;border-radius:10px;padding:10px;margin-top:10px;overflow-x:auto;white-space:pre;color:#222}
+        .sv-steps{font-size:12px;color:#555;line-height:1.7;margin:8px 0 0;padding-left:18px}
+      </style>
+      <div class="card">
+        <span class="badge">Live</span>
+        <h3>Transactional email</h3>
+        <p class="sv-small">Send automatic emails from your app: welcome messages, login codes, receipts and alerts. One request, one API key, no mail server to run.</p>
+        <div class="sv-chips">
+          <span class="sv-chip">REST API</span>
+          <span class="sv-chip">Key + secret auth</span>
+          <span class="sv-chip">HTML or plain text</span>
+          <span class="sv-chip">Up to 5 recipients</span>
+          <span class="sv-chip">20 emails/day free</span>
+          <span class="sv-chip">Usage limits per account</span>
+        </div>
+        <div><span class="method">POST</span><span class="path">/api/email</span></div>
+      </div>
+      <div class="card">
+        <h3>How it works</h3>
+        <ol class="sv-steps">
+          <li>Create an API key on the APIs page.</li>
+          <li>Send a POST request with your key and secret in the headers.</li>
+          <li>Pick an email type, or send your own subject and message.</li>
+          <li>The email is delivered and counted against your daily limit.</li>
+        </ol>
+        <div class="sv-code">curl -X POST https://multibundle.vercel.app/api/email \
+ -H "x-api-key: YOUR_KEY" \
+ -H "x-api-secret: YOUR_SECRET" \
+ -H "Content-Type: application/json" \
+ -d '{"to":"user@mail.com","subject":"Hello","html":"&lt;p&gt;Hi!&lt;/p&gt;"}'</div>
+      </div>
+      <div id="svList"></div>
+    </section>
+
+    <section class="page active" id="page-marketing">
+      <div class="card"><h3>Home</h3><p class="sv-small">Everything you can do with your Multi Bundle key. Tap a service to open it.</p></div>
+      <div id="homeCards"></div>
+    </section>
+
+    <section class="page" id="page-apis">
+      <div class="card">
+        <h3>API keys</h3>
+        <p>Each key has an API key and a secret. The secret is shown only once.</p>
+        <p id="signedOutMsg" style="display:none">Sign in to Multi Bundle first, then open this page again.</p>
+        <input class="key-input" id="keyName" placeholder="App name">
+        <input class="key-input" id="keySite" placeholder="Site address (e.g. https://myapp.com)">
+        <textarea class="key-input" id="keyDesc" rows="3" placeholder="Description"></textarea>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px"><input type="checkbox" id="permPublish"> Can publish files to GitHub</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px"><input type="checkbox" id="permWorkflow"> Can create build workflows</label>
+        <input class="key-input" id="keyRepos" placeholder="Allowed repos, comma separated (owner/name)">
+        <button class="try-btn" id="saveApp">Save</button>
+        <button class="try-btn" id="createKey" style="opacity:.35;pointer-events:none">Create key</button>
+        <div class="result" id="newKeyBox"></div>
+        <div id="keyList"></div>
+      </div>
+      <div class="card">
+        <span class="badge">Live</span>
+        <div><span class="method">POST</span><span class="path">/api/bundle</span></div>
+        <p>Send project files, get a bundled export back.</p>
+        <button class="try-btn" id="tryBundle">Try it</button>
+        <div class="result" id="bundleResult"></div>
+      </div>
+      <div class="card">
+        <span class="badge">Planned</span>
+        <div><span class="method">POST</span><span class="path">/api/compress</span></div>
+        <p>Lower the size of a project.</p>
+      </div>
+      <div class="card">
+        <span class="badge">Planned</span>
+        <div><span class="method">POST</span><span class="path">/api/publish</span></div>
+        <p>Publish a project to GitHub.</p>
+      </div>
+    </section>
+    <section class="page" id="page-account">
+      <div class="card">
+        <h3>Account</h3>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+          <img id="accPhoto" alt="" style="width:56px;height:56px;border-radius:50%;object-fit:cover;background:#ddd;display:none">
+          <div style="min-width:0">
+            <div id="accName" style="font-weight:600;font-size:16px">Not signed in</div>
+            <div id="accEmail" style="font-size:13px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+          </div>
+        </div>
+        <button class="try-btn" id="signOutBtn">Sign out</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <!-- Slide-out Menu -->
+  <div class="overlay" id="overlay"></div>
+  <nav class="drawer" id="drawer">
+    <div class="drawer-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap">
+      <span>Navigation</span>
+      <button id="dAccBtn" onclick="var p=document.getElementById('dAccPanel');p.style.display=p.style.display==='block'?'none':'block'" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:#eee center/cover no-repeat;font-size:16px;font-weight:700;color:#111;padding:0;display:flex;align-items:center;justify-content:center">?</button>
+      <div id="dAccPanel" style="display:none;width:100%;margin-top:16px;text-transform:none;letter-spacing:0;font-weight:400">
+        <div id="dAccName" style="font-weight:600;font-size:15px;color:#111">Not signed in</div>
+        <div id="dAccEmail" style="font-size:13px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+        <button id="dSignOut" class="del-btn" style="margin-top:10px">Sign out</button>
+      </div>
+    </div>
+    <a href="/" class="drawer-link back-link">← Back to Multi Bundle</a>
+    <a href="#" class="drawer-link active" data-page="marketing" style="gap:14px"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" style="flex:none"><path d="M12 2.8L2.9 10.4c-.5.4-.2 1.2.4 1.2H4.5V20a1.4 1.4 0 0 0 1.4 1.4H9.5v-6.3h5v6.3h3.6A1.4 1.4 0 0 0 19.5 20v-8.4h1.2c.6 0 .9-.8.4-1.2z"/></svg>Home</a>
+    <a href="#" class="drawer-link" data-page="services" style="gap:14px"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Services</a>
+    <a href="#" class="drawer-link" data-page="apis" style="gap:14px"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3L21 2"/><path d="M17 6l3 3"/><path d="M14 9l2.5 2.5"/></svg>APIs</a>
+  </nav>
+
+  <script>
+    // Firebase sign-in (same site as the app, so you are already signed in)
+    firebase.initializeApp({
+      apiKey: "AIzaSyBsZ-4kET9GM99MdSpaaHbqUdaFtOFApjo",
+      authDomain: "multibundle.vercel.app",
+      projectId: "multi-bundle-app",
+      storageBucket: "multi-bundle-app.firebasestorage.app",
+      messagingSenderId: "426558428895",
+      appId: "1:426558428895:web:0f4dd87cb8afd2b3843b6a"
+    });
+
+    function waitForUser() {
+      return new Promise(resolve => {
+        const off = firebase.auth().onAuthStateChanged(u => { off(); resolve(u); });
+      });
+    }
+
+    document.getElementById('tryBundle').addEventListener('click', async () => {
+      const box = document.getElementById('bundleResult');
+      box.style.display = 'block';
+      box.textContent = 'Calling /api/bundle...';
+      try {
+        const user = await waitForUser();
+        if (!user) { box.textContent = 'You are not signed in on this site.'; return; }
+        const token = await user.getIdToken();
+        const r = await fetch('/api/bundle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            name: 'Test',
+            files: [{ path: 'hello.txt', content: 'Hello from the API' }]
+          })
+        });
+        const data = await r.json();
+        box.textContent = r.status + '\n' + JSON.stringify(data, null, 2);
+      } catch (e) {
+        box.textContent = 'Error: ' + e.message;
+      }
+    });
+
+    // API keys
+    async function authFetch(url, opts) {
+      opts = opts || {};
+      const user = await waitForUser();
+      if (!user) throw new Error('You are not signed in on this site.');
+      const token = await user.getIdToken();
+      opts.headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+      return fetch(url, opts);
+    }
+
+    const kvStyle = document.createElement('style');
+    kvStyle.textContent = '.kv{margin-top:12px}.kv-label{font-size:12px;font-weight:600;margin-bottom:6px;color:#555}.kv-row{display:flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:4px 4px 4px 12px}.kv-val{flex:1;min-width:0;font-family:monospace;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kv-btn{flex:none;width:36px;height:36px;border:0;background:none;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#111}.kv-note{font-size:12px;font-weight:600;color:#b00020}';
+    document.head.appendChild(kvStyle);
+
+    function makeField(label, value, hidden) {
+      const svg = (p) => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>';
+      const EYE = svg('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>');
+      const EYE_OFF = svg('<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>');
+      const COPY = svg('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>');
+      const CHECK = svg('<polyline points="20 6 9 17 4 12"/>');
+      const wrap = document.createElement('div');
+      wrap.className = 'kv';
+      const lab = document.createElement('div');
+      lab.className = 'kv-label';
+      lab.textContent = label;
+      const row = document.createElement('div');
+      row.className = 'kv-row';
+      const val = document.createElement('div');
+      val.className = 'kv-val';
+      const eye = document.createElement('button');
+      eye.className = 'kv-btn';
+      const cp = document.createElement('button');
+      cp.className = 'kv-btn';
+      cp.innerHTML = COPY;
+      let shown = true;
+      const paint = () => { val.textContent = shown ? value : '\u2022'.repeat(20); eye.innerHTML = shown ? EYE_OFF : EYE; };
+      eye.onclick = () => { shown = !shown; paint(); };
+      cp.onclick = async () => {
+        try { await navigator.clipboard.writeText(value); } catch (e) {
+          const t = document.createElement('textarea'); t.value = value; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+        }
+        cp.innerHTML = CHECK;
+        setTimeout(() => { cp.innerHTML = COPY; }, 1200);
+      };
+      paint();
+      row.appendChild(val);
+      row.appendChild(eye);
+      row.appendChild(cp);
+      wrap.appendChild(lab);
+      wrap.appendChild(row);
+      return wrap;
+    }
+
+    function showNewKey(box, data) {
+      box.textContent = '';
+      box.style.whiteSpace = 'normal';
+      box.style.maxHeight = 'none';
+      const note = document.createElement('div');
+      note.className = 'kv-note';
+      note.textContent = 'Copy the secret now. It will not be shown again.';
+      box.appendChild(note);
+      box.appendChild(makeField('API key', data.key, true));
+      box.appendChild(makeField('Secret', data.secret, true));
+    }
+
+    const EMAIL_TYPES = [
+      ['welcome', 'Welcome email', 'Greet new users the moment they sign up.', 'Welcome to My App', '<h2>Welcome!</h2><p>Thanks for joining. Your account is ready.</p>'],
+      ['verify-code', 'Verification code', 'Send a one-time code to confirm an email or a login.', 'Your code is 482913', '<p>Your verification code is <b>482913</b>. It expires in 10 minutes.</p>'],
+      ['password-reset', 'Password reset', 'Let users reset a forgotten password safely.', 'Reset your password', '<p>Tap the link to choose a new password.</p><p><a href="https://myapp.com/reset">Reset password</a></p>'],
+      ['receipt', 'Order receipt', 'Confirm a purchase with the items and the total.', 'Your receipt #1042', '<h3>Thanks for your order</h3><p>Order #1042: 2 items, total $24.00</p>'],
+      ['invoice', 'Invoice', 'Send a bill with an amount and a due date.', 'Invoice #77 is ready', '<p>Invoice #77 for $120.00 is due on Dec 1.</p>'],
+      ['shipping', 'Shipping update', 'Tell customers their order is on the way.', 'Your order has shipped', '<p>Your order is on its way. Tracking: TRK12345.</p>'],
+      ['security-alert', 'Security alert', 'Warn about a new login or a changed password.', 'New sign-in to your account', '<p>We noticed a sign-in from a new device. If this was not you, change your password.</p>'],
+      ['renewal', 'Subscription renewal', 'Remind users before a plan renews or expires.', 'Your plan renews soon', '<p>Your plan renews on Dec 1. No action is needed.</p>'],
+      ['reminder', 'Event reminder', 'Remind someone about a booking or an event.', 'Reminder: tomorrow at 10:00', '<p>This is a reminder about your booking tomorrow at 10:00.</p>'],
+      ['invite', 'Team invite', 'Invite a person to join a team or a project.', 'You have been invited', '<p>You were invited to join a project. <a href="https://myapp.com/join">Accept invite</a></p>'],
+      ['feedback', 'Feedback request', 'Ask customers how it went after a purchase or a support chat.', 'How did we do?', '<p>We would love your feedback. It takes one minute.</p>'],
+      ['newsletter-confirm', 'Newsletter confirmation', 'Confirm a signup to your mailing list.', 'Confirm your subscription', '<p>Tap to confirm you want to receive our updates.</p>']
+    ];
+
+    (function renderServices() {
+      const list = document.getElementById('svList');
+      EMAIL_TYPES.forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const head = document.createElement('div');
+        head.className = 'sv-head';
+        const h = document.createElement('h3');
+        h.textContent = t[1];
+        const tag = document.createElement('span');
+        tag.className = 'sv-type';
+        tag.textContent = t[0];
+        head.appendChild(h);
+        head.appendChild(tag);
+        const p = document.createElement('p');
+        p.className = 'sv-small';
+        p.textContent = t[2];
+        const f = document.createElement('div');
+        f.className = 'sv-fields';
+        f.textContent = 'Fields: to, subject, html (or text)';
+        const code = document.createElement('div');
+        code.className = 'sv-code';
+        code.style.display = 'none';
+        code.textContent = JSON.stringify({ to: 'user@mail.com', subject: t[3], html: t[4] }, null, 2);
+        const btn = document.createElement('button');
+        btn.className = 'del-btn';
+        btn.style.margin = '10px 6px 0 0';
+        btn.textContent = 'View example';
+        btn.onclick = () => { const o = code.style.display === 'none'; code.style.display = o ? 'block' : 'none'; btn.textContent = o ? 'Hide example' : 'View example'; };
+        const cp = document.createElement('button');
+        cp.className = 'del-btn';
+        cp.style.marginTop = '10px';
+        cp.textContent = 'Copy';
+        cp.onclick = async () => { try { await navigator.clipboard.writeText(code.textContent); cp.textContent = 'Copied'; setTimeout(() => { cp.textContent = 'Copy'; }, 1200); } catch (e) { cp.textContent = 'Failed'; } };
+        card.appendChild(head);
+        card.appendChild(p);
+        card.appendChild(f);
+        card.appendChild(btn);
+        card.appendChild(cp);
+        card.appendChild(code);
+        list.appendChild(card);
+      });
+    })();
+
+    (function renderHome() {
+      const wrap = document.getElementById('homeCards');
+      const items = [
+        ['Email API', 'Send welcome emails, login codes and receipts with one request.', 'POST /api/email', 'services'],
+        ['Bundle', 'Send project files and get one bundled export back.', 'POST /api/bundle', 'apis'],
+        ['Projects', 'List and export the projects saved in your account.', 'POST /api/projects', 'apis'],
+        ['Publish', 'Push files to a GitHub repo without sending a GitHub token.', 'POST /api/publish', 'apis'],
+        ['Workflow', 'Create an APK build workflow in a repo and start a build.', 'POST /api/workflow', 'apis']
+      ];
+      items.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.cursor = 'pointer';
+        const head = document.createElement('div');
+        head.className = 'sv-head';
+        const h = document.createElement('h3');
+        h.textContent = it[0];
+        const b = document.createElement('span');
+        b.className = 'badge';
+        b.textContent = 'Live';
+        head.appendChild(h);
+        head.appendChild(b);
+        const p = document.createElement('p');
+        p.className = 'sv-small';
+        p.textContent = it[1];
+        const ep = document.createElement('div');
+        ep.className = 'sv-type';
+        ep.style.display = 'inline-block';
+        ep.style.marginTop = '10px';
+        ep.textContent = it[2];
+        card.appendChild(head);
+        card.appendChild(p);
+        card.appendChild(ep);
+        card.onclick = () => { const l = document.querySelector('[data-page="' + it[3] + '"]'); if (l) l.click(); };
+        wrap.appendChild(card);
+      });
+    })();
+
+    async function loadKeys() {
+      const list = document.getElementById('keyList');
+      try {
+        const r = await authFetch('/api/keys');
+        const data = await r.json();
+        list.innerHTML = '';
+        (data.keys || []).forEach(k => {
+          const row = document.createElement('div');
+          row.className = 'key-row';
+          const title = document.createElement('div');
+          title.textContent = k.name;
+          const code = document.createElement('code');
+          code.textContent = k.key;
+          const del = document.createElement('button');
+          del.className = 'del-btn';
+          del.textContent = 'Delete';
+          del.onclick = async () => {
+            if (!confirm('Delete this key? Apps using it will stop working.')) return;
+            await authFetch('/api/keys', { method: 'DELETE', body: JSON.stringify({ key: k.key }) });
+            loadKeys();
+          };
+          row.appendChild(title);
+          const det = document.createElement('div');
+          det.style.display = 'none';
+          if (k.site) { const s = document.createElement('div'); s.className = 'kv-label'; s.style.marginTop = '10px'; s.textContent = 'Site: ' + k.site; det.appendChild(s); }
+          if (k.description) { const d = document.createElement('div'); d.style.cssText = 'font-size:13px;margin-top:6px;color:#555'; d.textContent = k.description; det.appendChild(d); }
+          det.appendChild(makeField('API key', k.key, false));
+          const perm = document.createElement('div');
+          perm.className = 'sv-small';
+          const pl = [];
+          if (k.permissions && k.permissions.publish) pl.push('publish');
+          if (k.permissions && k.permissions.workflow) pl.push('workflow');
+          perm.textContent = 'Can: ' + (pl.length ? pl.join(', ') : 'no GitHub access') + (k.repos && k.repos.length ? ' | Repos: ' + k.repos.join(', ') : '');
+          det.appendChild(perm);
+          const more = document.createElement('button');
+          more.className = 'del-btn';
+          more.textContent = 'Details';
+          more.onclick = () => { const open = det.style.display === 'none'; det.style.display = open ? 'block' : 'none'; more.textContent = open ? 'Hide' : 'Details'; };
+          row.appendChild(more);
+          row.appendChild(det);
+          row.appendChild(document.createElement('br'));
+          row.appendChild(del);
+          list.appendChild(row);
+        });
+      } catch (e) {
+        list.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    document.getElementById('saveApp').addEventListener('click', () => {
+      const box = document.getElementById('newKeyBox');
+      if (!document.getElementById('keyName').value.trim()) {
+        box.style.display = 'block';
+        box.textContent = 'Enter an app name first.';
+        return;
+      }
+      box.style.display = 'none';
+      document.getElementById('createKey').style.opacity = '1';
+      document.getElementById('createKey').style.pointerEvents = 'auto';
+    });
+
+    document.getElementById('createKey').addEventListener('click', async () => {
+      const box = document.getElementById('newKeyBox');
+      box.style.display = 'block';
+      box.textContent = 'Creating...';
+      try {
+        const name = document.getElementById('keyName').value || 'My key';
+        const r = await authFetch('/api/keys', { method: 'POST', body: JSON.stringify({ name, site: document.getElementById('keySite').value.trim(), description: document.getElementById('keyDesc').value.trim(), permissions: { publish: document.getElementById('permPublish').checked, workflow: document.getElementById('permWorkflow').checked }, repos: document.getElementById('keyRepos').value.split(',').map(s => s.trim()).filter(Boolean) }) });
+        const data = await r.json();
+        if (!r.ok) { box.textContent = data.error || 'Failed'; return; }
+        showNewKey(box, data);
+        document.getElementById('keyName').value = '';
+        document.getElementById('keySite').value = '';
+        document.getElementById('keyDesc').value = '';
+        document.getElementById('permPublish').checked = false;
+        document.getElementById('permWorkflow').checked = false;
+        document.getElementById('keyRepos').value = '';
+        document.getElementById('createKey').style.opacity = '.35';
+        document.getElementById('createKey').style.pointerEvents = 'none';
+        loadKeys();
+      } catch (e) {
+        box.textContent = 'Error: ' + e.message;
+      }
+    });
+
+    const signedOutMsg = document.getElementById('signedOutMsg');
+
+    firebase.auth().onAuthStateChanged(u => {
+      signedOutMsg.style.display = u ? 'none' : 'block';
+      const dBtn = document.getElementById('dAccBtn');
+      dBtn.style.backgroundImage = (u && u.photoURL) ? 'url("' + u.photoURL + '")' : 'none';
+      dBtn.textContent = (u && u.photoURL) ? '' : (u ? (u.displayName || u.email || '?').charAt(0).toUpperCase() : '?');
+      document.getElementById('dAccName').textContent = u ? (u.displayName || 'Signed in') : 'Not signed in';
+      document.getElementById('dAccEmail').textContent = u ? (u.email || '') : '';
+      document.getElementById('dSignOut').onclick = async () => { await firebase.auth().signOut(); location.href = '/'; };
+      document.getElementById('accName').textContent = u ? (u.displayName || 'Signed in') : 'Not signed in';
+      document.getElementById('accEmail').textContent = u ? (u.email || '') : '';
+      const ph = document.getElementById('accPhoto');
+      if (u && u.photoURL) { ph.src = u.photoURL; ph.style.display = 'block'; } else { ph.style.display = 'none'; }
+      document.getElementById('signOutBtn').onclick = async () => { await firebase.auth().signOut(); location.href = '/'; };
+      if (u) loadKeys();
+    });
+
+    // Menu logic
+    const openBtn = document.getElementById('openMenu');
+    const overlay = document.getElementById('overlay');
+    const drawer = document.getElementById('drawer');
+
+    let pendingPage = null;
+    const inFrame = window.self !== window.top;
+
+    // clear a leftover menu step if the page was reopened with one
+    if (history.state && history.state.menu) history.replaceState(null, '');
+
+    function closeMenuUI() {
+      drawer.classList.remove('active');
+      overlay.classList.remove('active');
+    }
+
+    function closeMenu() {
+      if (!inFrame && history.state && history.state.menu) history.back();
+      else closeMenuUI();
+    }
+
+    openBtn.addEventListener('click', () => {
+      drawer.classList.add('active');
+      overlay.classList.add('active');
+      if (!inFrame) history.pushState({ menu: true }, '');
+    });
+
+    overlay.addEventListener('click', closeMenu);
+
+    // Close menu when a link is clicked
+    function showPage(name) {
+      if (!document.getElementById('page-' + name)) name = 'marketing';
+      document.querySelectorAll('.drawer-link').forEach(l => {
+        l.classList.toggle('active', l.dataset.page === name);
+      });
+      document.querySelectorAll('.page').forEach(p => {
+        p.classList.toggle('active', p.id === 'page-' + name);
+      });
+    }
+
+    document.querySelectorAll('.drawer-link[data-page]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const name = link.dataset.page;
+        if (inFrame) {
+          closeMenuUI();
+          showPage(name);
+        } else if (history.state && history.state.menu) {
+          pendingPage = name;
+          history.back();
+        } else {
+          history.replaceState(null, '', '#' + name);
+          showPage(name);
+        }
+      });
+    });
+
+    // Android Back button: close the menu first, then go to the previous section
+    window.addEventListener('popstate', () => {
+      closeMenuUI();
+      if (pendingPage) {
+        const n = pendingPage;
+        pendingPage = null;
+        history.replaceState(null, '', '#' + n);
+        showPage(n);
+      } else {
+        showPage(location.hash.slice(1) || 'marketing');
+      }
+    });
+
+    document.querySelectorAll('.back-link, .top-back').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (inFrame) parent.postMessage({ type: 'mb-go-home' }, '*');
+        else location.replace('/');
+      });
+    });
+
+    showPage(location.hash.slice(1) || 'marketing');
+  </script>
+
+</body>
+</html>

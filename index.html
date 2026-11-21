@@ -1,0 +1,1239 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#15161a"><script>try{var d=document.documentElement,L=localStorage;if(L.getItem('mb_ed_wrap')==='1'){d.classList.add('mb-wrap','mb-boot');setTimeout(function(){d.classList.remove('mb-boot')},4000);var s=document.createElement('style');s.textContent='html.mb-wrap #editorShell .editor-hl,html.mb-wrap #editorShell .editor-code #editorTextarea{white-space:pre-wrap!important;overflow-wrap:anywhere!important;word-break:normal!important;overflow-x:hidden!important}html.mb-wrap #editorShell .editor-code #editorTextarea{scrollbar-width:none}html.mb-boot #editorShell .editor-pane{visibility:hidden}';document.head.appendChild(s)}if(L.getItem('mb_ed_ln')==='0')d.classList.add('mb-noln')}catch(e){}</script><title>Multi Bundle</title><link rel="stylesheet" href="style.css"><link rel="manifest" href="manifest.json"><link rel="icon" type="image/png" href="logo.png"><link rel="apple-touch-icon" href="logo.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Multi Bundle"><script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script><script src="/topbar.js"></script><script src="editoronly.js"></script>
+<script>
+  // Fix for Firebase Auth blank white screen on mobile
+  if (window.location.pathname.includes('/__/auth/handler')) {
+    setTimeout(function() {
+      window.location.href = '/';
+    }, 500);
+  }
+</script>
+</head>
+<body class="auth-loading">
+<header class="app-head" style="position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;height:calc(44px + max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px)));padding:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px)) 10px 0;background:#15161a;border-bottom:1px solid #303139">
+
+  <button id="menuBtn" class="head-btn" aria-label="Menu">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="head-title" style="flex:1;text-align:center">MB <span>EDITOR</span></div>
+  <button id="clearBtn" class="head-btn" title="Clear">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/></svg>
+  </button>
+</header>
+
+<div id="drawerBackdrop" class="drawer-backdrop"></div>
+<aside id="drawer" class="drawer">
+  <div class="drawer-head">
+    <div class="drawer-logo"><div><b>MB <span>EDITOR</span></b><small>Code editor</small></div></div>
+    <button id="drawerClose" class="drawer-x" aria-label="Close">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <nav class="drawer-nav">
+    <a data-tab="home">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </a>
+    <a data-tab="projects">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <span>Projects</span>
+    </a>
+    <a data-tab="editor">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      <span>Editor</span>
+    </a>
+   <a data-tab="services">
+       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span>Services</span>
+    </a>
+    <a data-tab="bundle">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <span>Bundle</span>
+    </a>
+    <a data-tab="backups">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+      <span>Files</span>
+    </a>
+    <a data-tab="github">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      <span>GitHub</span>
+    </a>
+    <a data-tab="updates">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Last Updates</span>
+    </a>
+    <a data-tab="settings">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Settings</span>
+    </a>
+  </nav>
+  <div class="drawer-section">
+    <label>TOOLS</label>
+    <div id="drawerAccount"></div>
+    <button id="drawerNewProject">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      New project
+    </button>
+    <button id="drawerImportZip">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      Import ZIP
+    </button>
+    <button id="drawerGithub">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      Import from GitHub
+    </button>
+    <button id="drawerStore">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Publish Store
+    </button>
+    <button id="drawerWorkflow">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.5 6H14a3 3 0 0 1 3 3v6.5"/></svg>
+      Workflow
+    </button>
+    <button id="drawerCloud" onclick="location.href='cloud.html'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>Cloud</button>
+    <button id="drawerClear">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/></svg>
+      Clear current project
+    </button>
+  </div>
+  <div class="drawer-foot">Multi Bundle · Local preview · v1</div>
+</aside>
+
+<script>try{document.querySelector('meta[name="theme-color"]').setAttribute('content','#0b0c0f')}catch(e){}</script>
+<main>
+<section id="homePage" class="tab-page" hidden>
+<section class="card" id="authCard">
+  <label class="eyebrow">ACCOUNT</label>
+  <h2>Your account</h2>
+  <div id="authBox" style="margin-top:10px;"></div>
+</section>
+ <section class="card hero"><label class="eyebrow" id="heroEyebrow">YOUR LOCAL WORKSPACE</label><h1>Build it. <span>Preview it.</span></h1><p>Keep your website files organized, create a TXT bundle, and preview static pages locally on your device.</p><div class="actions"><button id="homeProjectsBtn" class="btn primary">Open Projects</button><button id="homePreviewBtn" class="btn secondary">Open Preview</button></div></section>
+ <section class="card"><label class="eyebrow">CURRENT PROJECT</label><div class="heading"><h2 id="homeProjectName">No project loaded</h2><span id="homeFileCount" class="pill">0 files</span></div><p id="homeStatus">Go to Projects to import a website folder or ZIP.</p><a id="homeLive" class="home-live" href="#" target="_blank" rel="noopener" hidden><div><small>LIVE ADDRESS</small><b id="homeLiveText"></b></div><i>&#8599;</i></a><div class="actions"><button id="homeBundleBtn" class="btn primary" disabled>Create TXT bundle</button><button id="homeOpenPreviewBtn" class="btn secondary" disabled>Preview website</button></div></section>
+ <section class="card note-card"><b>Local workspace</b><p>Best for static HTML, CSS, JavaScript, and images. Server-side features like PHP and databases need a real server. Keep your original files safe.</p></section>
+</section>
+
+<section id="projectsPage" class="tab-page" hidden>
+  <div id="projectsListView">
+    <section class="card">
+      <label class="eyebrow">PROJECTS</label>
+      <h1>Your <span>Projects</span></h1>
+      <p>Import a website folder or ZIP. Your files are saved on this device.</p>
+      <div class="actions">
+        <label class="btn primary">New project<input id="folderInput" type="file" webkitdirectory directory multiple hidden></label>
+        <label class="btn secondary">Import ZIP<input id="zipInput" type="file" accept=".zip,application/zip" hidden></label>
+      </div>
+      <div class="status" id="status">Choose a folder or ZIP to start a new project. Max 10 projects.</div>
+    </section>
+
+    <section class="card">
+      <div class="heading">
+        <div><label class="eyebrow">SAVED PROJECTS</label><h2>All projects</h2></div>
+        <span id="projectCount" class="pill">0</span>
+      </div>
+      <div id="projectCards" class="project-cards"></div>
+    </section>
+
+    <!-- NEW: GitHub Repos Section -->
+    <section class="card" id="ghProjectsSection" hidden>
+      <div class="heading">
+        <div><label class="eyebrow">GITHUB ACCOUNT</label><h2>Your Repositories</h2></div>
+        <span id="ghProjectCount" class="pill">0</span>
+      </div>
+      <p class="note">Tap a repo to import it into Multi Bundle.</p>
+      <div id="ghProjectCards" class="project-cards" style="margin-top:10px;"></div>
+    </section>
+  </div>
+
+  <div id="projectDetailView" hidden>
+    <section class="card">
+      <button id="backToProjectsBtn" class="btn secondary">← All projects</button>
+      <div class="heading" style="margin-top:14px">
+        <div><label class="eyebrow">PROJECT</label><h2 id="detailProjectName">—</h2></div>
+        <span id="detailFileCount" class="pill">0 files</span>
+      </div>
+      <div class="actions">
+        <button id="detailEditBtn" class="btn primary">Edit code</button>
+        <button id="detailImportChangesBtn" class="btn secondary">Import changes</button>
+        <button id="detailBundleBtn" class="btn secondary">Bundle</button>
+        <button id="detailDeleteBtn" class="btn secondary">Delete</button>
+      </div>
+      <div class="status" id="detailStatus">Tap "Edit code" to modify files.</div>
+    </section>
+    <section class="card">
+      <div class="heading"><label class="eyebrow">FILES</label></div>
+      <div id="detailFileList" class="filelist"></div>
+    </section>
+  </div>
+
+  <input id="changesFolderInput" type="file" webkitdirectory directory multiple hidden>
+</section>
+
+<section id="githubPage" class="tab-page" hidden>
+  <section class="card">
+    <label class="eyebrow">GITHUB</label>
+    <h1>GitHub <span>Repos</span></h1>
+    <p>Sign in with GitHub to see all your repos, including private ones. No token needed.</p>
+    <button id="ghOauthBtn" class="btn primary" style="width:100%">Connect with GitHub</button>
+    <button id="ghImportBtn" class="btn secondary" style="width:100%;margin-top:10px" onclick="document.getElementById('githubPage').classList.toggle('gh-open')">Import</button>
+    <style>#githubPage:not([hidden]){display:flex;flex-direction:column}#githubPage:has(#githubLoggedIn:not([hidden])) #ghOauthBtn{display:none}#githubPage #githubLoggedOut{display:block}#githubPage > section:has(#githubLoggedOut),#githubPage > section:has(#ghPublicUrl){order:1}#ghProfileCard{order:2}#githubPage:not(:has(#githubLoggedIn:not([hidden]))) #ghProfileCard{display:none}#githubPage:not(.gh-open) > section:not(:has(#ghImportBtn)):not(#ghProfileCard){display:none}</style>
+  </section>
+  <section class="card" id="ghProfileCard">
+    <label class="eyebrow">PROJECTS</label>
+    <h2>Your GitHub projects</h2>
+    <div id="githubLoggedIn" hidden>
+      <div class="gh-user">
+        <img id="ghAvatar" alt="">
+        <div class="gh-user-info"><b id="ghName">—</b><small id="ghLogin">—</small></div>
+        <button id="githubLogoutBtn" class="btn secondary">Sign out</button>
+      </div>
+      <input id="ghRepoSearch" class="gh-search" type="text" placeholder="Search your repos…" autocomplete="off">
+      <div id="ghRepoList" class="gh-repo-list"></div>
+    </div>
+  </section>
+  <section class="card">
+    <label class="eyebrow">TOKEN</label>
+    <h2>Import with a token</h2>
+    <p>Sign in with a token to see your repos (including private).</p>
+    <div id="githubLoggedOut">
+      <div class="gh-row">
+        <input id="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+        <button id="githubLoginBtn" class="btn primary">Sign in</button>
+      </div>
+      <p class="note">Or create a token at github.com/settings/tokens → Generate new token (classic) → tick "repo" → Generate → copy.</p>
+      <div class="status" id="githubStatus">Not signed in.</div>
+    </div>
+  </section>
+  <section class="card">
+    <label class="eyebrow">PUBLIC REPO</label>
+    <h2>Import by URL</h2>
+    <p>Works without signing in. Public repos only. Also accepts /commit/SHA or /tree/branch.</p>
+    <div class="gh-row">
+      <input id="ghPublicUrl" type="text" placeholder="https://github.com/owner/repo" autocomplete="off">
+      <button id="ghPublicBtn" class="btn primary">Import</button>
+    </div>
+    <div class="status" id="ghPublicStatus">Paste a public repo URL.</div>
+  </section>
+</section>
+<style>#githubPage:not([hidden])::after{content:"Tip: tap any repo in your list to import it. It will appear in your Projects tab.";order:3;display:block;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;padding:18px 20px;margin-bottom:90px;border:1px dashed var(--line);border-radius:17px}</style>
+<section id="githubPageOld" class="tab-page" hidden>
+  <section class="card">
+    <label class="eyebrow">GITHUB</label>
+    <h1>GitHub <span>Repos</span></h1>
+    <p>Sign in with GitHub to see all your repos, including private ones. No token needed.</p>
+    
+    <button id="ghOauthBtn" class="btn primary" style="width:100%">Connect with GitHub</button>
+
+    <div id="githubLoggedIn" hidden>
+      <div class="gh-user">
+        <img id="ghAvatar" alt="">
+        <div class="gh-user-info"><b id="ghName">—</b><small id="ghLogin">—</small></div>
+        <button id="githubLogoutBtn" class="btn secondary">Sign out</button>
+      </div>
+      <input id="ghRepoSearch" class="gh-search" type="text" placeholder="Search your repos…" autocomplete="off">
+      <div id="ghRepoList" class="gh-repo-list"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <label class="eyebrow">PUBLIC REPO</label>
+    <h2>Import by URL</h2>
+    <p>Works without signing in. Public repos only. Also accepts /commit/SHA or /tree/branch.</p>
+    <div class="gh-row">
+      <input id="ghPublicUrl" type="text" placeholder="https://github.com/owner/repo" autocomplete="off">
+      <button id="ghPublicBtn" class="btn primary">Import</button>
+    </div>
+    <div class="status" id="ghPublicStatus">Paste a public repo URL.</div>
+  </section>
+</section>
+
+<section id="updatesPage" class="tab-page" hidden>
+  <section class="card">
+    <label class="eyebrow">ACTIVITY</label>
+    <h1>Last <span>Updates</span></h1>
+    <p>See recent changes to your projects.</p>
+    <div class="updates-tabs">
+      <button id="updatesTabGithub" class="updates-tab active">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:-3px;margin-right:6px"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+        GitHub
+      </button>
+      <button id="updatesTabLocal" class="updates-tab">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Multi Bundle
+      </button>
+    </div>
+  </section>
+
+  <div id="updatesListView">
+    <section class="card" id="updatesGithubSection">
+      <div class="heading">
+        <div><label class="eyebrow">GITHUB PROJECTS</label><h2>With drafted changes</h2></div>
+        <span id="updatesGithubCount" class="pill">0</span>
+      </div>
+      <div id="updatesGithubList" class="updates-projects"></div>
+    </section>
+
+    <section class="card" id="updatesLocalSection" hidden>
+      <div class="heading">
+        <div><label class="eyebrow">LOCAL PROJECTS</label><h2>All activity</h2></div>
+        <span id="updatesLocalCount" class="pill">0</span>
+      </div>
+      <div id="updatesLocalList" class="updates-projects"></div>
+    </section>
+  </div>
+
+  <div id="updatesDetailView" hidden>
+    <section class="card">
+      <button id="updatesBackBtn" class="btn secondary">← Back</button>
+      <div class="heading" style="margin-top:14px">
+        <div><label class="eyebrow" id="updatesDetailEyebrow">HISTORY</label><h2 id="updatesDetailName">—</h2></div>
+        <span id="updatesDetailCount" class="pill">0</span>
+      </div>
+      <div id="updatesDetailNote" class="status">—</div>
+      <div id="ghRemoteBox" hidden style="margin-top:12px"></div>
+    </section>
+    <section class="card">
+      <div class="heading"><label class="eyebrow">RECENT CHANGES</label></div>
+      <div id="updatesDetailList" class="updates-list"></div>
+    </section>
+    <section class="card">
+      <div class="heading" style="align-items:center; margin-bottom:10px;">
+        <div><label class="eyebrow">SNAPSHOTS</label><h2>Rollback points</h2></div>
+        <button id="updatesSaveNowBtn" class="btn primary btn-sm">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save
+        </button>
+      </div>
+      <div id="updatesSnapshotsList" class="snapshots-list"></div>
+    </section>
+  </div>
+
+  <!-- NEW: Published Detail View -->
+  <div id="publishedDetailView" hidden>
+    <section class="card">
+      <button id="publishedBackBtn" class="btn secondary">← Back to Updates</button>
+      <div class="heading" style="margin-top:14px">
+        <div><label class="eyebrow">PUBLISHED GROUP</label><h2 id="publishedDetailTitle">—</h2></div>
+        <span id="publishedDetailCount" class="pill">0 files</span>
+      </div>
+      <div id="publishedDetailMeta" class="status">—</div>
+    </section>
+
+    <section class="card">
+      <div class="heading"><label class="eyebrow">FILES IN THIS PUBLISH</label></div>
+      <div id="publishedFileList" class="filelist" style="max-height: 40vh; overflow-y: auto;"></div>
+    </section>
+
+    <section class="card" style="position: sticky; bottom: 80px; z-index: 10; background: #15161a; border-color: #303139;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="pubDetailSaveBack" class="btn primary" style="flex:1;">Save Back</button>
+        <button id="pubDetailPublishBack" class="btn secondary" style="flex:1;">Publish Back</button>
+        <button id="pubDetailDownload" class="btn secondary" style="flex:1;">Download</button>
+      </div>
+    </section>
+  </div>
+
+</section>
+
+<section id="bundlePage" class="tab-page" hidden>
+ <section class="card hero"><label class="eyebrow">BUNDLE CENTER</label><h1>TXT <span>Bundle</span></h1><p>Combine the text-based files from your current project into one readable TXT backup file.</p></section>
+ <section class="card"><div class="heading"><div><label class="eyebrow">READY TO EXPORT</label><h2 id="bundleProjectName">No project loaded</h2></div><span id="bundleFileCount" class="pill">0 files</span></div><p id="bundleStatus">Import a project first from the Projects tab.</p><button id="bundleBtn" class="btn primary" disabled>Export TXT bundle</button><p class="note">Text files are included. Images, fonts, and other binary assets are represented by a note and are not embedded in the TXT file.</p></section>
+ <section class="card" id="apkCard" style="display:none;cursor:pointer;padding:14px 18px" onclick="openApkPage()"><style>#apkCard{-webkit-tap-highlight-color:transparent}#apkWf{color:#fff!important;text-decoration:underline;text-decoration-color:currentColor;text-underline-offset:3px}#apkWf{transition:color .25s ease,text-decoration-color .25s ease}#apkCard:active{transform:none!important;opacity:1!important}#apkCard:active #apkWf{color:#f01424!important;text-decoration-color:#f01424!important}#apkWf{text-decoration:underline;text-decoration-color:#fff;text-underline-offset:3px}#apkCard:active .apkT{color:#f01424!important}</style><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="min-width:0"><div class="apkT" style="font:700 14px system-ui,sans-serif;color:#f01424">Build APK</div><div id="apkWf" style="font-size:12px;color:#8f919b;margin-top:3px;overflow-wrap:anywhere">GitHub workflow</div></div><span style="font-size:11px;font-weight:800;letter-spacing:2px;color:#8f919b">ANDROID</span></div></section>
+</section>
+
+<section id="previewPage" class="tab-page" hidden>
+  <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px; padding: 0 16px;">
+    <select id="pageSelect" disabled style="flex: 1; min-width: 0; background: #101115; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 13px; outline: 0;"><option>No project loaded</option></select>
+    <button id="openPageBtn" class="btn secondary" disabled style="padding: 10px 16px;">Open</button>
+    <button id="fullScreenBtn" class="btn primary" style="padding: 10px 16px; white-space: nowrap;">Full screen</button>
+  </div>
+  
+  <div class="browser" style="margin: 0 16px 10px 16px;">
+    <i></i><i></i><i></i>
+    <span id="previewPath">Your website will appear here</span>
+    <button id="refreshBtn" disabled>↻</button>
+  </div>
+  
+  <div class="preview-wrap" style="flex: 1; min-height: 0; display: flex; border-radius: 0;">
+    <div id="previewLoader" class="preview-loader"><div class="spinner"></div></div>
+    <iframe id="frame" bgcolor="#0d0e12" title="Local website preview" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin" hidden style="flex: 1; height: 100%; width: 100%; border: 0;"></iframe>
+  </div>
+</section>
+
+<section id="settingsPage" class="tab-page" hidden><div id="settingsRoot"></div></section>
+
+<section id="editorPage" class="tab-page">
+  <div class="editor-shell" id="editorShell">
+    <div class="editor-toolbar">
+      <div class="et-row et-file-row">
+       <select id="editorFileSelect" class="editor-file-select"></select>
+        <button id="editorThemeBtn" class="editor-btn small" title="Editor colors" aria-label="Editor colors"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+        <div id="editorThemeCard" class="editor-theme-card">
+          <button data-th="lb" class="eth-opt"><i style="background:#1c1d22"></i>Light Black</button>
+          <button data-th="pw" class="eth-opt"><i style="background:#f5f5f3"></i>Soft White</button>
+          <button data-th="sb" class="eth-opt"><i style="background:#000000"></i>Solid Black</button>
+          <button data-th="sw" class="eth-opt"><i style="background:#ffffff"></i>Solid White</button>
+          <button data-th="pb" class="eth-opt"><i style="background:#2b2c33;border-color:#8a8a92"></i>Soft Black</button>
+          <button data-th="vw" class="eth-opt"><i style="background:#e4e4e1"></i>Mist White</button>
+        </div>
+      </div>
+      <div class="et-row et-actions">
+        <button id="editorNewBtn" class="editor-btn" title="New file">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button id="editorUndoBtn" class="editor-btn" disabled title="Undo">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-4"/></svg>
+        </button>
+        <button id="editorRedoBtn" class="editor-btn" disabled title="Redo">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h4"/></svg>
+        </button>
+        <button id="editorSearchBtn" class="editor-btn" title="Search">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <button id="editorPreviewBtn" class="editor-btn" title="Preview">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+        </button>
+        <button id="editorFullBtn" class="editor-btn" title="Full screen">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 9 4 4 9 4"/><polyline points="20 9 20 4 15 4"/><polyline points="4 15 4 20 9 20"/><polyline points="20 15 20 20 15 20"/></svg>
+        </button>
+        <button id="editorSaveBtn" class="editor-btn primary" title="Save">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="editor-searchbar" id="editorSearchBar">
+      <textarea id="editorSearchInput" class="editor-search-input" rows="1" placeholder="Search"></textarea>
+      <span id="editorSearchCount" class="editor-search-count">0/0</span>
+      <button id="editorSearchPrev" class="editor-btn small">↑</button>
+      <button id="editorSearchNext" class="editor-btn small">↓</button>
+      <button id="editorSearchClose" class="editor-btn small">✕</button>
+      <div style="flex-basis:100%;height:0"></div>
+      <textarea id="editorReplaceInput" class="editor-search-input" rows="1" placeholder="Replace"></textarea>
+      <button id="editorCutBtn" class="editor-btn small" title="Cut the highlighted match">Cut</button>
+      <button id="editorReplaceOne" class="editor-btn small">Replace</button>
+      <button id="editorReplaceAll" class="editor-btn small">All</button>
+    </div>
+    <div class="editor-body">
+      <div class="editor-pane">
+        <div class="editor-gutter" id="editorGutter">1</div>
+        <div class="editor-code">
+          <pre class="editor-hl" id="editorHighlight" aria-hidden="true"></pre>
+          <textarea id="editorTextarea" spellcheck="false" autocorrect="off" autocapitalize="off" data-gramm="false" data-enable-grammarly="false" inputmode="text" enterkeyhint="enter" placeholder="Select a project file to edit code"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="editor-statusbar">
+      <span id="editorStatus">No file selected</span>
+      <span id="editorCursor">Ln 1, Col 1</span>
+    </div>
+    <div class="editor-preview-pane" id="editorPreviewPane">
+      <div class="editor-preview-bar">
+        <span>PREVIEW</span><input id="editorPreviewUrl" type="text" inputmode="url" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Search or type address" style="flex:1;min-width:0;margin:0 8px;height:30px;border-radius:15px;background:#0d0e12;border:1px solid #2a2c34;color:#c4c4cb;font-size:12px;padding:0 12px;outline:none">
+        <div style="display:flex;gap:6px">
+          <button id="editorPreviewRefresh" class="editor-btn small">↻</button>
+          <button id="editorPreviewFull" class="editor-btn small" title="Full screen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+          <button id="editorPreviewClose" class="editor-btn small">✕</button>
+        </div>
+      </div>
+      <div class="editor-preview-wrap">
+        <div id="editorPreviewLoader" class="preview-loader show"><div class="spinner"></div></div>
+        <iframe id="editorPreviewFrame" bgcolor="#0d0e12" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="backupsPage" class="tab-page" hidden><section class="card"><label class="eyebrow">FILES</label><h1>Your <span>Files</span></h1><p>Create a TXT bundle from the Bundle tab and save it somewhere safe. This prototype does not yet keep a backup history automatically.</p><button id="backupsBundleBtn" class="btn primary">Open Bundle</button></section></section>
+</main>
+
+<!-- Full Screen Login Gate -->
+<div id="loginGate" style="position:fixed;inset:0;background:#0d0e12;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;overflow-y:auto;">
+  
+  <!-- NEW LOADING SCREEN -->
+  <div id="gateLoading" style="color:#a2a3ad; font-size:16px; font-weight:bold;">
+    <div class="spinner" style="margin:0 auto 16px; width:36px; height:36px; border:3px solid #2a2c34; border-top-color:var(--red); border-radius:50%; animation:mb-spin .8s linear infinite;"></div>
+    Checking login...
+  </div>
+
+  <!-- HIDE THE LOGIN BUTTONS UNTIL CHECK IS DONE -->
+  <div id="gateContent" style="display:none; margin:auto 0;width:100%;max-width:340px;">
+    <h1 style="margin:0 0 12px;font-size:38px;font-weight:900;letter-spacing:-1px;color:#fff;line-height:1.1;font-family:system-ui,-apple-system,sans-serif;">
+      Welcome to<br><span style="color:var(--red);">Multi Bundle</span>
+    </h1>
+    <p style="color:#a2a3ad;margin:0 auto 26px;max-width:320px;font-size:14px;line-height:1.6;">
+      Your secure workspace for web projects. Each account gets its own private projects on this phone.
+    </p>
+
+    <button id="gateLoginBtn" class="g-btn g-google" type="button">
+      <svg viewBox="0 0 48 48" width="24" height="24"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continue with Google
+    </button>
+    <button id="gateGithubBtn" class="g-btn g-github" type="button">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      Continue with GitHub
+    </button>
+
+    <div class="g-or">or use email</div>
+
+    <div id="gateNameWrap" hidden><input id="gateName" class="g-input" type="text" placeholder="Your name" autocomplete="name"></div>
+    <input id="gateEmail" class="g-input" type="email" placeholder="Email" autocomplete="email" autocapitalize="off">
+    <div style="position: relative; width: 100%; margin-bottom: 10px;">
+  <input id="gatePassword" class="g-input" type="password" placeholder="Password" autocomplete="current-password" style="margin-bottom: 0; padding-right: 40px;">
+  <button id="togglePasswordBtn" type="button" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #a2a3ad; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
+    <svg id="eyeOpen" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    <svg id="eyeClosed" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+  </button>
+</div>
+    <button id="gateEmailBtn" class="g-btn g-main" type="button">Sign in with email</button>
+
+    <div class="g-links">
+      <button id="gateModeBtn" class="g-link" type="button">New here? Create account</button>
+      <button id="gateForgot" class="g-link" type="button">Forgot password?</button>
+    </div>
+    <div id="gateMsg" class="g-msg"></div>
+  </div>
+</div>
+
+<div id="toastRoot" class="toast-root"></div>
+
+<div id="modalRoot" class="modal-root" hidden>
+  <div class="modal-backdrop"></div>
+  <div class="modal-card">
+    <div class="modal-icon" id="modalIcon">?</div>
+    <h3 class="modal-title" id="modalTitle">Title</h3>
+    <p class="modal-message" id="modalMessage"></p>
+    <input class="modal-input" id="modalInput" hidden autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn secondary" id="modalCancelBtn">Cancel</button>
+      <button class="btn primary" id="modalConfirmBtn">OK</button>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom">
+  <span data-tab="home">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <small>Home</small>
+  </span>
+  <span data-tab="bundle">
+    <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    <small>Bundle</small>
+  </span>
+  <span data-tab="projects">
+    <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    <small>Projects</small>
+  </span>
+  <span data-tab="editor">
+    <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    <small>Editor</small>
+  </span>
+ <span data-tab="services">
+   <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    <small>Services</small>
+  </span>
+  <span data-tab="backups">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+    <small>Files</small>
+  </span>
+</nav>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBsZ-4kET9GM99MdSpaaHbqUdaFtOFApjo",
+        authDomain: "multibundle.vercel.app",
+    projectId: "multi-bundle-app",
+    storageBucket: "multi-bundle-app.firebasestorage.app",
+    messagingSenderId: "426558428895",
+    appId: "1:426558428895:web:0f4dd87cb8afd2b3843b6a",
+    measurementId: "G-NRLM5GB7N8"
+  };
+  
+    firebase.initializeApp(firebaseConfig);
+  function __who(){return new Promise(function(r){var un=firebase.auth().onAuthStateChanged(function(u){un();r(u)})})}
+  window.cloudTok={
+    save:async function(t){try{var u=await __who();if(!u)return;await firebase.firestore().doc('users/'+u.uid+'/private/github').set({token:t,at:Date.now()})}catch(e){}},
+    load:async function(){try{var u=await __who();if(!u)return'';var d=await firebase.firestore().doc('users/'+u.uid+'/private/github').get();return d.exists?(d.data().token||''):''}catch(e){return''}}
+  };
+</script>
+
+<script>
+(function(){
+  var sig={};
+  function who(){return new Promise(function(r){var un=firebase.auth().onAuthStateChanged(function(u){un();r(u)})})}
+  function hash(s){var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0}return h+':'+s.length}
+  window.cloudProj={
+    save:async function(arr){
+      try{
+        var u=await who();if(!u||!arr)return;
+        var db=firebase.firestore();
+        for(var p of arr){
+          if(!p||!p.id)continue;
+          var base='users/'+u.uid+'/projects/'+encodeURIComponent(p.id);
+          var tf=(p.files||[]).filter(function(f){return typeof f.text==='string'&&!f.blob&&f.text.length<500000});
+          var ops=[];
+          tf.forEach(function(f){var k=p.id+'|'+f.path,h=hash(f.text);if(sig[k]!==h)ops.push({f:f,k:k,h:h})});
+          var mk=p.id+'|meta',ms=(p.savedAt||0)+':'+(p.name||'')+':'+tf.length;
+          for(var i=0;i<ops.length;i+=200){
+            var part=ops.slice(i,i+200),b=db.batch();
+            part.forEach(function(o){b.set(db.doc(base+'/files/'+encodeURIComponent(o.f.path)),{path:o.f.path,name:o.f.name||'',type:o.f.type||'',size:o.f.size||0,text:o.f.text})});
+            await b.commit();
+            part.forEach(function(o){sig[o.k]=o.h});
+          }
+          if(sig[mk]!==ms||ops.length){
+            await db.doc(base).set({id:p.id,name:p.name||'',savedAt:p.savedAt||0,createdAt:p.createdAt||0,source:p.source||'',githubRepo:p.githubRepo||'',githubBranch:p.githubBranch||'',paths:tf.map(function(f){return f.path})});
+            sig[mk]=ms;
+          }
+        }
+      }catch(e){}
+    },
+    load:async function(){
+      try{
+        var u=await who();if(!u)return[];
+        var db=firebase.firestore(),out=[];
+        var ps=await db.collection('users/'+u.uid+'/projects').get();
+        for(var d of ps.docs){
+          var m=d.data(),snap=await d.ref.collection('files').get(),files=[];
+          snap.forEach(function(x){var f=x.data();if(!m.paths||m.paths.indexOf(f.path)>=0)files.push({path:f.path,name:f.name,size:f.size,type:f.type,text:f.text})});
+          out.push({id:m.id,name:m.name,savedAt:m.savedAt,createdAt:m.createdAt,source:m.source||undefined,githubRepo:m.githubRepo||undefined,githubBranch:m.githubBranch||undefined,files:files,history:[]});
+        }
+        return out;
+      }catch(e){return[]}
+    }
+  };
+})();
+</script>
+<script>
+(function(){
+  var sig={};
+  function who(){return new Promise(function(r){var un=firebase.auth().onAuthStateChanged(function(u){un();r(u)})})}
+  function hash(s){var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0}return h+':'+s.length}
+  window.cloudProj={
+    save:async function(arr){
+      try{
+        var u=await who();if(!u||!arr)return;
+        var db=firebase.firestore();
+        for(var p of arr){
+          if(!p||!p.id)continue;
+          var base='users/'+u.uid+'/projects/'+encodeURIComponent(p.id);
+          var tf=(p.files||[]).filter(function(f){return typeof f.text==='string'&&!f.blob&&f.text.length<500000});
+          var ops=[];
+          tf.forEach(function(f){var k=p.id+'|'+f.path,h=hash(f.text);if(sig[k]!==h)ops.push({f:f,k:k,h:h})});
+          var mk=p.id+'|meta',ms=(p.savedAt||0)+':'+(p.name||'')+':'+tf.length;
+          for(var i=0;i<ops.length;i+=200){
+            var part=ops.slice(i,i+200),b=db.batch();
+            part.forEach(function(o){b.set(db.doc(base+'/files/'+encodeURIComponent(o.f.path)),{path:o.f.path,name:o.f.name||'',type:o.f.type||'',size:o.f.size||0,text:o.f.text})});
+            await b.commit();
+            part.forEach(function(o){sig[o.k]=o.h});
+          }
+          if(sig[mk]!==ms||ops.length){
+            await db.doc(base).set({id:p.id,name:p.name||'',savedAt:p.savedAt||0,createdAt:p.createdAt||0,source:p.source||'',githubRepo:p.githubRepo||'',githubBranch:p.githubBranch||'',paths:tf.map(function(f){return f.path})});
+            sig[mk]=ms;
+          }
+        }
+      }catch(e){}
+    },
+    load:async function(){
+      try{
+        var u=await who();if(!u)return[];
+        var db=firebase.firestore(),out=[];
+        var ps=await db.collection('users/'+u.uid+'/projects').get();
+        for(var d of ps.docs){
+          var m=d.data(),snap=await d.ref.collection('files').get(),files=[];
+          snap.forEach(function(x){var f=x.data();if(!m.paths||m.paths.indexOf(f.path)>=0)files.push({path:f.path,name:f.name,size:f.size,type:f.type,text:f.text})});
+          out.push({id:m.id,name:m.name,savedAt:m.savedAt,createdAt:m.createdAt,source:m.source||undefined,githubRepo:m.githubRepo||undefined,githubBranch:m.githubBranch||undefined,files:files,history:[]});
+        }
+        return out;
+      }catch(e){return[]}
+    }
+  };
+})();
+</script>
+<script>
+(function(){
+  var sig={},warned=false;
+  function who(){return new Promise(function(r){var un=firebase.auth().onAuthStateChanged(function(u){un();r(u)})})}
+  function hash(s){var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0}return h+':'+s.length}
+  function bytes(s){try{return new TextEncoder().encode(s).length}catch(e){return s.length*3}}
+  window.cloudProj.save=async function(arr){
+    var u=await who();if(!u||!arr)return;
+    var db=firebase.firestore();
+    for(var p of arr){
+      try{
+        if(!p||!p.id)continue;
+        var base='users/'+u.uid+'/projects/'+encodeURIComponent(p.id);
+        var tf=(p.files||[]).filter(function(f){return typeof f.text==='string'&&!f.blob&&bytes(f.text)<900000});
+        var ops=[];
+        tf.forEach(function(f){var k=p.id+'|'+f.path,h=hash(f.text);if(sig[k]!==h)ops.push({f:f,k:k,h:h,sz:bytes(f.text)+600})});
+        var mk=p.id+'|meta',ms=(p.savedAt||0)+':'+(p.name||'')+':'+tf.length;
+        var part=[],size=0;
+        var commit=async function(){
+          if(!part.length)return;
+          var b=db.batch();
+          part.forEach(function(o){b.set(db.doc(base+'/files/'+encodeURIComponent(o.f.path)),{path:o.f.path,name:o.f.name||'',type:o.f.type||'',size:o.f.size||0,text:o.f.text})});
+          await b.commit();
+          part.forEach(function(o){sig[o.k]=o.h});
+          part=[];size=0;
+        };
+        for(var o of ops){
+          if(part.length&&(size+o.sz>1500000||part.length>=100))await commit();
+          part.push(o);size+=o.sz;
+        }
+        await commit();
+        if(sig[mk]!==ms||ops.length){
+          await db.doc(base).set({id:p.id,name:p.name||'',savedAt:p.savedAt||0,createdAt:p.createdAt||0,source:p.source||'',githubRepo:p.githubRepo||'',githubBranch:p.githubBranch||'',paths:tf.map(function(f){return f.path})});
+          sig[mk]=ms;
+        }
+      }catch(e){
+        console.warn('Cloud save failed',p&&p.name,e);
+        if(!warned){warned=true;if(window.showToast)window.showToast('Cloud backup failed for "'+((p&&p.name)||'a project')+'". '+((e&&e.code)||''),'error')}
+      }
+    }
+  };
+})();
+</script>
+<script>
+(function(){
+  var sig=null,warned=false,skipped=0,CH=700000,MAXB=8*1024*1024;
+  function who(){return new Promise(function(r){var un=firebase.auth().onAuthStateChanged(function(u){un();r(u)})})}
+  function bytes(s){try{return new TextEncoder().encode(s).length}catch(e){return s.length*3}}
+  function hash(s){var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0}return h+':'+s.length}
+  function toB64(blob){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(',')[1]||'')};r.onerror=function(){rej(r.error)};r.readAsDataURL(blob)})}
+  function fromB64(b64,type){var bin=atob(b64),n=bin.length,u=new Uint8Array(n);for(var i=0;i<n;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:type||'application/octet-stream'})}
+  var zc={},ZP='\u0001gz:';
+  function u8b64(u){var s='';for(var i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)}
+  function b64u8(b){var bin=atob(b),n=bin.length,u=new Uint8Array(n);for(var i=0;i<n;i++)u[i]=bin.charCodeAt(i);return u}
+  async function gzText(s){if(typeof CompressionStream==='undefined')return null;try{var st=new Blob([s]).stream().pipeThrough(new CompressionStream('gzip'));return u8b64(new Uint8Array(await new Response(st).arrayBuffer()))}catch(e){return null}}
+  async function unGzText(b){var st=new Blob([b64u8(b)]).stream().pipeThrough(new DecompressionStream('gzip'));return await new Response(st).text()}
+  function loadSig(u){if(sig&&window.__sigUid===u.uid)return;window.__sigUid=u.uid;try{sig=JSON.parse(localStorage.getItem('mb_cloudsig_'+u.uid)||'{}')}catch(e){sig={}}}
+  function saveSig(u){try{localStorage.setItem('mb_cloudsig_'+u.uid,JSON.stringify(sig))}catch(e){}}
+  window.cloudProj.save=async function(arr){
+    var u=await who();if(!u||!arr)return;
+    loadSig(u);
+    if(window.__cpUid&&window.__cpUid!=='local'){var __em=(u.email||(u.providerData&&u.providerData[0]&&u.providerData[0].email)||'').toLowerCase();var __ck=__em?('e:'+__em):u.uid;if(window.__cpUid!==__ck)return}
+    arr=arr.filter(function(x){return !(window.__delChk&&window.__delChk[x&&x.id])});
+    var db=firebase.firestore();
+    for(var p of arr){
+      try{
+        if(!p||!p.id)continue;
+        var base='users/'+u.uid+'/projects/'+encodeURIComponent(p.id);
+        var all=p.files||[];
+        var tf=[];
+        for(var f0 of all){
+          if(typeof f0.text!=='string'||f0.blob)continue;
+          var raw=bytes(f0.text);
+          if(raw<20000){tf.push(f0);continue}
+          var zk=p.id+'|'+f0.path,zh=hash(f0.text),zt=zc[zk]&&zc[zk].h===zh?zc[zk].t:null;
+          if(!zt){var z=await gzText(f0.text);if(z){zt=ZP+z;zc[zk]={h:zh,t:zt}}}
+          if(zt){
+            if(zt.length<900000)tf.push({path:f0.path,name:f0.name,type:f0.type,size:f0.size,text:zt});
+            else skipped++;
+          }else if(raw<900000)tf.push(f0);
+          else skipped++;
+        }
+        var bf=all.filter(function(f){return f.blob&&typeof f.text!=='string'&&f.blob.size<=MAXB});
+        skipped+=all.filter(function(f){return f.blob&&typeof f.text!=='string'&&f.blob.size>MAXB}).length;
+        var changed=false;
+        var ops=[];
+        tf.forEach(function(f){var k=p.id+'|'+f.path,h=hash(f.text);if(sig[k]!==h)ops.push({f:f,k:k,h:h,sz:bytes(f.text)+600})});
+        var part=[],size=0;
+        var commit=async function(){
+          if(!part.length)return;
+          var b=db.batch();
+          part.forEach(function(o){b.set(db.doc(base+'/files/'+encodeURIComponent(o.f.path)),{path:o.f.path,name:o.f.name||'',type:o.f.type||'',size:o.f.size||0,text:o.f.text})});
+          await b.commit();
+          part.forEach(function(o){sig[o.k]=o.h});
+          part=[];size=0;changed=true;
+        };
+        for(var o of ops){
+          if(part.length&&(size+o.sz>1500000||part.length>=100))await commit();
+          part.push(o);size+=o.sz;
+        }
+        await commit();
+        for(var f of bf){
+          var bk=p.id+'|b|'+f.path,bs=f.blob.size+':'+(f.blob.type||'');
+          if(sig[bk]===bs)continue;
+          var b64=await toB64(f.blob),n=Math.max(1,Math.ceil(b64.length/CH));
+          for(var i=0;i<n;i+=2){
+            var wb=db.batch();
+            for(var j=i;j<Math.min(n,i+2);j++){
+              wb.set(db.doc(base+'/blobs/'+encodeURIComponent(f.path)+'__'+j),{path:f.path,name:f.name||'',type:f.blob.type||f.type||'',size:f.blob.size,i:j,n:n,data:b64.slice(j*CH,(j+1)*CH)});
+            }
+            await wb.commit();
+          }
+          sig[bk]=bs;changed=true;
+        }
+        var mk=p.id+'|meta',ms=(p.savedAt||0)+':'+(p.name||'')+':'+tf.length+':'+bf.length+':'+(p.logo||'')+':'+(p.githubShas?Object.keys(p.githubShas).length:0);
+        if(sig[mk]!==ms||changed){
+          await db.doc(base).set({id:p.id,name:p.name||'',savedAt:p.savedAt||0,createdAt:p.createdAt||0,source:p.source||'',githubRepo:p.githubRepo||'',githubBranch:p.githubBranch||'',paths:tf.map(function(f){return f.path}),bpaths:bf.map(function(f){return f.path}),logo:p.logo||'',githubShas:p.githubShas||null});
+          sig[mk]=ms;
+        }
+        saveSig(u);
+      }catch(e){
+        console.warn('Cloud save failed',p&&p.name,e);
+        if(!warned){warned=true;if(window.showToast)window.showToast('Cloud backup failed for "'+((p&&p.name)||'a project')+'". '+((e&&e.code)||''),'error')}
+      }
+    }
+    if(skipped&&!window.__bigWarned){window.__bigWarned=true;if(window.showToast)window.showToast(skipped+' file(s) are too big to back up even compressed. Keep them on GitHub.','error')}
+  };
+  window.cloudProj.load=async function(){
+    try{
+      var u=await who();if(!u)return[];
+      var db=firebase.firestore(),out=[];
+      var ps=await db.collection('users/'+u.uid+'/projects').get();
+      var __docs=ps.docs.slice(),__di=0,__dn=0;
+      var __one=async function(di){
+        var d=__docs[di];
+        var m=d.data(),files=[];
+        var snap=await d.ref.collection('files').get();
+        snap.forEach(function(x){var f=x.data();if(!m.paths||m.paths.indexOf(f.path)>=0)files.push({path:f.path,name:f.name,size:f.size,type:f.type,text:f.text})});
+        for(var zi=files.length-1;zi>=0;zi--){var zf=files[zi];if(typeof zf.text==='string'&&zf.text.indexOf(ZP)===0){try{zf.text=await unGzText(zf.text.slice(ZP.length))}catch(e){files.splice(zi,1)}}}
+        if(m.bpaths&&m.bpaths.length){
+          var bs=await d.ref.collection('blobs').get(),g={};
+          bs.forEach(function(x){var c=x.data();if(m.bpaths.indexOf(c.path)<0)return;var o=g[c.path]=g[c.path]||{meta:c,parts:[]};o.parts[c.i]=c.data});
+          Object.keys(g).forEach(function(pth){
+            var o=g[pth],ok=o.parts.length===o.meta.n;
+            for(var k=0;ok&&k<o.meta.n;k++){if(!o.parts[k])ok=false}
+            if(!ok)return;
+            try{files.push({path:pth,name:o.meta.name,size:o.meta.size,type:o.meta.type,text:null,blob:fromB64(o.parts.join(''),o.meta.type)})}catch(e){}
+          });
+        }
+        out.push({id:m.id,name:m.name,savedAt:m.savedAt,createdAt:m.createdAt,source:m.source||undefined,githubRepo:m.githubRepo||undefined,githubBranch:m.githubBranch||undefined,files:files,history:[]});
+      }
+      ;await Promise.all([0,1,2,3,4].map(async function(){while(__di<__docs.length){await __one(__di++);__dn++;try{window.__ldNote&&window.__ldNote('Loading projects '+__dn+'/'+__docs.length)}catch(e){}}}));
+var __ord={};__docs.forEach(function(d,i){__ord[d.data().id]=i});out.sort(function(a,b){return __ord[a.id]-__ord[b.id]});
+ps.docs.forEach(function(d,i){var m=d.data();if(out[i]){if(m.logo)out[i].logo=m.logo;if(m.githubShas)out[i].githubShas=m.githubShas}});
+      ps.docs.forEach(function(d,i){if(out[i]&&d.data().deleted)out[i].deleted=true});window.__cloudLoadOK=true;
+      
+      return out;
+    }catch(e){return[]}
+  };
+})();
+</script>
+<script src="folder-access.js"></script>
+<script>document.addEventListener('contextmenu',function(e){var t=e.target;if(t&&t.closest&&t.closest('input,textarea,[contenteditable="true"],pre,code,.selectable'))return;e.preventDefault()},true)</script>
+<script>
+(function(){
+  var base=0,bw=window.innerWidth;
+  function upd(){
+    if(window.innerWidth!==bw){bw=window.innerWidth;base=0}
+    var vh=window.visualViewport?window.visualViewport.height:window.innerHeight;
+    if(vh>base)base=vh;
+    document.documentElement.style.setProperty('--vvh',vh+'px');
+    document.documentElement.style.setProperty('--vvt',(window.visualViewport?window.visualViewport.offsetTop:0)+'px');
+    var ae=document.activeElement;
+    var typing=!!(ae&&/^(TEXTAREA|INPUT)$/.test(ae.tagName));
+    var was=document.body.classList.contains('kb-open');
+    var now=typing&&vh<base-120;
+    document.body.classList.toggle('kb-open',now);
+    if(was!==now){[0,60,200,500].forEach(function(ms){setTimeout(function(){
+      var t=document.getElementById('editorTextarea');
+      var h=document.querySelector('.editor-hl'),g=document.querySelector('.editor-gutter'),s=document.getElementById('editorShell');
+      if(t){t.dispatchEvent(new Event('scroll'));if(h){h.scrollTop=t.scrollTop;h.scrollLeft=t.scrollLeft}if(g)g.scrollTop=t.scrollTop}
+      if(s){s.style.transform='translateZ(0)';void s.offsetHeight;s.style.transform=''}
+    },ms)})}
+  }
+  window.addEventListener('resize',upd);
+  if(window.visualViewport)window.visualViewport.addEventListener('resize',upd);
+  document.addEventListener('focusin',function(){setTimeout(upd,300)});
+  document.addEventListener('focusout',function(){setTimeout(upd,150)});
+  upd();
+})();
+</script>
+<script>try{Object.defineProperty(navigator,'share',{value:undefined,configurable:true});Object.defineProperty(navigator,'canShare',{value:undefined,configurable:true})}catch(e){}</script>
+<script src="sync.js"></script>
+<script src="app.js"></script>
+<script src="errwatch.js"></script>
+<script src="editor.js"></script>
+<script src="edtools.js"></script>
+<script src="caret.js"></script>
+<script>
+(function(){
+var sel=document.getElementById('editorFileSelect');
+if(!sel)return;
+var st=document.createElement('style');
+st.textContent='body:has(#mbFileSheetBd.open) .app-head,body:has(#mbFileSheetBd.open) .editor-toolbar,body:has(#mbFileSheetBd.open) .bottom{display:none!important}#mbFileSheetBd{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:10002!important;background:#17181c}#mbFileSheetBd.open{display:flex;top:0!important;bottom:0!important;height:100%!important}#mbFileSheet{position:relative;width:100%;height:100%;overflow-y:auto;background:#17181c;border-top:0;padding-bottom:env(safe-area-inset-bottom,0px)}.mbf-search-wrap{display:none;padding:0 12px 10px;background:#17181c;border-bottom:1px solid #2c2d34}.mbf-search-wrap.open{display:block}.mbf-search{width:100%;box-sizing:border-box;background:#20222a;border:1px solid #303139;color:#fff;border-radius:10px;padding:10px 14px;font-size:14px;outline:none;font-family:inherit}.mbf-search:focus{border-color:var(--red)}.mbf-search-btn{margin-left:auto;background:transparent;border:0;color:#c8c9d0;padding:6px;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer}.mbf-search-btn.on{color:var(--red)}#mbFileSheet button{display:block;width:100%;text-align:left;padding:10px 14px;font-size:13px;font-weight:600;color:#c8c9d0;background:transparent;border:0;border-bottom:1px solid #25262c;border-radius:0;font-family:inherit}#mbFileSheet button.on{background:#2a2c34;color:#f5d76e}#mbFileSheet .mbf-bar{position:sticky;top:0;z-index:2;display:flex;gap:8px;padding:10px 12px;background:#17181c;border-bottom:1px solid #2c2d34}#mbFileSheet .mbf-bar button{display:inline-flex;align-items:center;gap:7px;width:auto;padding:9px 14px;border:1px solid #303139;border-radius:10px;background:#20222a;font-size:13px;font-weight:700;text-align:center;color:#c8c9d0}#mbFileSheet .mbf-bar button.on{background:#2a2c34;color:#f5d76e;border-color:#6b5a1a}#mbFileSheet .mbf-empty{padding:16px 14px;font-size:13px;color:#8b8c96}#mbFileSheet .mbf-sub{display:block;font-size:11px;color:#8b8c96;font-weight:500;margin-top:2px}';
+document.head.appendChild(st);
+var row=sel.parentNode;
+var cs=document.createElement('style');cs.textContent='#editorFileSelect{-webkit-appearance:none;appearance:none;padding-right:34px!important}#mbSelArr{position:absolute;pointer-events:none;color:#e6e6e8;display:flex;transition:transform .2s ease}';document.head.appendChild(cs);
+var arr=document.createElement('span');arr.id='mbSelArr';arr.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+row.appendChild(arr);
+function pl(){var r=sel.getBoundingClientRect(),q=row.getBoundingClientRect();arr.style.left=(r.right-q.left-30)+'px';arr.style.top=(r.top-q.top+(r.height-16)/2)+'px'}
+pl();window.addEventListener('resize',pl);if(window.ResizeObserver)new ResizeObserver(pl).observe(sel);setTimeout(pl,300);
+function turn(on){arr.style.transform=on?'rotate(180deg)':'rotate(0deg)'}
+var bd=document.createElement('div');bd.id='mbFileSheetBd';
+var sh=document.createElement('div');sh.id='mbFileSheet';
+bd.appendChild(sh);document.body.appendChild(bd);
+function close(){bd.classList.remove('open');turn(false)}
+var mode='all';
+function isLogo(p){var b=String(p).split('/').pop();if(/\.(js|css|json|html?|txt|md)$/i.test(b))return false;return /\.(png|svg)$/i.test(b)||/logo/i.test(b)}
+function bar(){
+  var d=document.createElement('div');d.className='mbf-bar';
+  var ic='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+    [['all','All files'],['logos',ic+'<span>Logos</span>']].forEach(function(m){
+    var b=document.createElement('button');b.type='button';b.innerHTML=m[1];if(mode===m[0])b.className='on';
+    b.onclick=function(){mode=m[0];searchQ='';open(true)};
+    d.appendChild(b);
+  });
+  if(mode!=='logos'){var sq=document.createElement('button');sq.type='button';sq.className='mbf-search-btn'+(searchQ?' on':'');sq.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';d.appendChild(sq);}
+  sh.appendChild(d);
+  if(mode==='logos')return;
+  var sb=document.createElement('div');sb.className='mbf-search-wrap'+(searchQ?' open':'');
+  sb.innerHTML='<input type="text" class="mbf-search" id="mbFileSearch" placeholder="Search files..." value="'+(searchQ?escHtml(searchQ):'')+'">'; 
+  sh.appendChild(sb);var cb=document.createElement('button');cb.type='button';cb.className='mbf-cancel';cb.setAttribute('aria-label','Close search');cb.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';cb.onclick=function(){sq.onclick()};sb.appendChild(cb);
+  sq.onclick=function(){sb.classList.toggle('open');if(sb.classList.contains('open')){sb.querySelector('input').focus();sq.classList.add('on')}else{sq.classList.remove('on');searchQ='';sb.querySelector('input').value='';sb.querySelector('input').oninput()}};
+  var inp=sb.querySelector('input');
+  inp.oninput=function(){
+    searchQ=inp.value.toLowerCase().trim();var cur=sel.value;
+    [].slice.call(sh.querySelectorAll('button[data-fp], .mbf-empty')).forEach(function(b){b.remove()});
+    for(var i=0;i<sel.options.length;i++){(function(o){
+      if(!o.value)return;
+      if(searchQ&&o.value.toLowerCase().indexOf(searchQ)===-1)return;
+      var b=document.createElement('button');b.type='button';b.setAttribute('data-fp',o.value);b.style.display='flex';b.style.alignItems='center';b.style.gap='12px';b.innerHTML=IC_FILE+'<span></span>';b.lastChild.textContent=o.value.split('/').pop();
+      if(!searchQ&&o.value===cur)b.className='on';
+      var lpT;
+b.addEventListener('touchstart', function(){ lpT = setTimeout(function(){ if(window.showToast) window.showToast('Long press to select'); }, 500); }, {passive:true});
+b.addEventListener('touchend', function(){ clearTimeout(lpT); }, {passive:true});
+b.addEventListener('touchmove', function(){ clearTimeout(lpT); }, {passive:true});
+b.onclick=function(){ringGo(function(){close();window.__edSkipRestore=Date.now()+1500;if(sel.value!==o.value){sel.value=o.value;sel.dispatchEvent(new Event('change',{bubbles:true}))}},450)};
+      sh.appendChild(b);
+    })(sel.options[i])}
+    if(!searchQ)groupRows(cur,true);
+    else if(!sh.querySelector('button[data-fp]')){var em=document.createElement('div');em.className='mbf-empty';em.textContent='No files match "'+inp.value+'"';sh.appendChild(em)}
+  };
+}
+function viewImg(f){
+  var old=document.getElementById('mbImgView');if(old)old.remove();
+  var u='';try{u=URL.createObjectURL(typeof fileBlob==='function'?fileBlob(f):f.blob)}catch(e){}
+  var ov=document.createElement('div');ov.id='mbImgView';
+  ov.style.cssText='position:fixed;inset:0;z-index:10010;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;font-family:system-ui,sans-serif;color:#fff';
+  var cap=document.createElement('div');cap.textContent=f.path;cap.style.cssText='font-size:13px;font-weight:700;text-align:center;overflow-wrap:anywhere';
+  var box=document.createElement('div');box.style.cssText='max-width:100%;max-height:70%;display:flex;border-radius:12px;overflow:hidden;background:repeating-conic-gradient(#e6e6ea 0% 25%,#fff 0% 50%) 50%/20px 20px';
+  var im=document.createElement('img');im.src=u;im.style.cssText='max-width:100%;max-height:100%;object-fit:contain';
+  im.onerror=function(){box.style.background='#2b1d1d';box.style.padding='16px';box.textContent='This file cannot be shown as an image.'};
+  box.appendChild(im);
+  var x=document.createElement('button');x.type='button';x.textContent='Close';x.style.cssText='padding:10px 28px;border-radius:10px;border:1px solid #303139;background:#20222a;color:#fff;font-size:14px;font-weight:700;font-family:inherit';
+  function done(){ov.remove();if(u)URL.revokeObjectURL(u)}
+  x.onclick=done;ov.onclick=function(e){if(e.target===ov)done()};
+  ov.appendChild(cap);ov.appendChild(box);ov.appendChild(x);document.body.appendChild(ov);
+}
+function logoList(){
+  var fl=(typeof files!=='undefined'&&files)?files:[],list=fl.filter(function(f){return f&&isLogo(f.path)});
+  list.sort(function(a,b){return a.path.localeCompare(b.path)});
+  if(!list.length){var em=document.createElement('div');em.className='mbf-empty';em.textContent='No logo files found (png, svg or a file named logo).';sh.appendChild(em);return}
+  list.forEach(function(f){
+    var b=document.createElement('button');b.type='button';
+    var t=document.createElement('span');t.textContent=f.path;
+    var s=document.createElement('span');s.className='mbf-sub';s.textContent=f.text!=null?'Opens in the editor':'Image - tap to view';
+    t.style.display='block';
+    var w=document.createElement('div');w.style.cssText='min-width:0;flex:1';w.appendChild(t);w.appendChild(s);
+    b.style.display='flex';b.style.alignItems='center';b.style.gap='12px';b.style.paddingLeft='16px';
+    b.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a2a3ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';b.appendChild(w);
+    b.onclick=function(){
+      close();
+      if(f.text!=null){window.__edSkipRestore=Date.now()+1500;if(sel.value!==f.path){sel.value=f.path;sel.dispatchEvent(new Event('change',{bubbles:true}))}}
+      else if(window.__mbLogoCrop){window.__mbLogoCrop(f)}else viewImg(f);
+    };
+    sh.appendChild(b);
+  });
+}
+var curDir='', searchQ='';
+var IC_FOLDER='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a2a3ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+var IC_FILE='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a2a3ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/></svg>';
+function ringGo(fn,ms){
+  var ov=document.getElementById('mbRing');
+  if(!ov){
+    ov=document.createElement('div');ov.id='mbRing';
+    ov.style.cssText='position:fixed;left:0;right:0;z-index:10001;background:#17181c;display:none;align-items:center;justify-content:center';
+    ov.innerHTML='<div style="width:30px;height:30px;border:3px solid #2a2c34;border-top-color:var(--red);border-radius:50%;animation:mb-spin .8s linear infinite"></div>';
+    document.body.appendChild(ov);
+  }
+  ov.style.top='0';ov.style.bottom='0';ov.style.zIndex='10003';ov.style.display='flex';
+  requestAnimationFrame(function(){requestAnimationFrame(function(){fn();requestAnimationFrame(function(){setTimeout(function(){ov.style.display='none'},ms||350)})})});
+}
+function groupRows(cur,fresh){
+  var bs=[].slice.call(sh.querySelectorAll('button[data-fp]'));
+  var tree={d:{},f:[]};
+  bs.forEach(function(b){
+    b.parentNode.removeChild(b);
+    var parts=b.getAttribute('data-fp').split('/'),n=tree;
+    for(var i=0;i<parts.length-1;i++){n=n.d[parts[i]]||(n.d[parts[i]]={d:{},f:[]})}
+    n.f.push(b);
+  });
+  if(fresh)curDir='';
+  function draw(n,pre,depth){
+    Object.keys(n.d).sort().forEach(function(name){
+      var path=pre+name;
+      var r=document.createElement('button');r.type='button';
+      r.style.display='flex';r.style.alignItems='center';r.style.gap='12px';r.style.paddingLeft=(16+depth*22)+'px';
+      r.innerHTML=IC_FOLDER+'<span></span>';r.lastChild.textContent=name;
+      r.onclick=function(){ringGo(function(){curDir=path;open(true);sh.scrollTop=0},200)};
+      sh.appendChild(r);
+    });
+    n.f.forEach(function(b){b.style.paddingLeft=(16+depth*22)+'px';sh.appendChild(b)});
+  }
+  var node=tree,segs=curDir?curDir.split('/'):[];
+  segs.forEach(function(s){node=(node&&node.d[s])||{d:{},f:[]}});
+  if(curDir){
+    var bk=document.createElement('button');bk.type='button';
+    bk.style.display='flex';bk.style.alignItems='center';bk.style.gap='12px';bk.style.paddingLeft='16px';
+    bk.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a2a3ad" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><polyline points="15 18 9 12 15 6"/></svg><span></span>';
+    bk.lastChild.textContent=curDir;
+    bk.onclick=function(){ringGo(function(){curDir=curDir.split('/').slice(0,-1).join('/');open(true);sh.scrollTop=0},200)};
+    sh.appendChild(bk);
+  }
+  draw(node,curDir?curDir+'/':'',0);
+}
+function open(keep){
+  if(!keep){mode='all';searchQ='';}
+  sh.innerHTML='';
+  bar();
+  var cur=sel.value,curEl=null;
+  if(mode==='logos')logoList();
+  else{for(var i=0;i<sel.options.length;i++){(function(o){
+    if(!o.value)return;
+    if(searchQ && o.value.toLowerCase().indexOf(searchQ)===-1)return;
+    var b=document.createElement('button');b.type='button';b.setAttribute('data-fp',o.value);b.style.display='flex';b.style.alignItems='center';b.style.gap='12px';b.innerHTML=IC_FILE+'<span></span>';b.lastChild.textContent=o.value.split('/').pop();
+    if(!searchQ && o.value===cur){b.className='on';curEl=b}
+    var lpT;
+b.addEventListener('touchstart', function(){ lpT = setTimeout(function(){ if(window.showToast) window.showToast('Long press to select'); }, 500); }, {passive:true});
+b.addEventListener('touchend', function(){ clearTimeout(lpT); }, {passive:true});
+b.addEventListener('touchmove', function(){ clearTimeout(lpT); }, {passive:true});
+b.onclick=function(){ringGo(function(){close();window.__edSkipRestore=Date.now()+1500;if(sel.value!==o.value){sel.value=o.value;sel.dispatchEvent(new Event('change',{bubbles:true}))}},450)};
+    sh.appendChild(b);
+  })(sel.options[i])}
+  if(!searchQ)groupRows(cur,!keep);
+  else if(!sh.querySelector('button[data-fp]')){var em=document.createElement('div');em.className='mbf-empty';em.textContent='No files match "'+searchQ+'"';sh.appendChild(em)}}
+  bd.style.top='0px';bd.style.bottom='0px';
+  bd.classList.add('open');turn(true);
+  if(curEl)sh.scrollTop=curEl.offsetTop-sh.clientHeight/2+curEl.offsetHeight/2;
+var ta0=document.getElementById('editorTextarea');if(ta0)ta0.blur();window.__edSkipRestore=Date.now()+1500;function __nk(){try{var a=document.activeElement;if(a&&a!==document.body&&a.blur&&!bd.contains(a))a.blur()}catch(e){}}__nk();[60,200,450].forEach(function(ms){setTimeout(function(){if(bd.classList.contains('open'))__nk()},ms)});
+}
+sel.addEventListener('mousedown',function(e){e.preventDefault()});
+sel.addEventListener('click',function(e){e.preventDefault();if(bd.classList.contains('open'))close();else open()});
+var tbEl=document.querySelector('.editor-toolbar');
+if(tbEl)tbEl.addEventListener('click',function(e){if(e.target!==sel)close()});
+bd.addEventListener('click',function(e){if(e.target===bd)close()});
+})();
+</script>
+<script src="bundlebtn.js"></script>
+<script src="bundlebtn.js"></script>
+<script src="settings.js"></script>
+<script src="publish.js"></script>
+<script src="backups.js"></script>
+<script src="filemgr.js"></script>
+<script src="profile.js"></script>
+<script src="logocrop.js"></script>
+<script src="loadbar.js"></script>
+<script src="filesort.js"></script>
+<script src="projpage.js"></script>
+<script>
+var __apkChk={};
+async function ghHasWorkflow(p){
+  var t=window.getToken?window.getToken():'';
+  if(!t||!p||!p.githubRepo)return false;
+  var br=p.githubBranch||'main',key=p.githubRepo+'@'+br;
+  var c=__apkChk[key];
+  if(c&&Date.now()-c.t<60000)return c.v;
+  var v=false;
+  try{
+    var r=await fetch('https://api.github.com/repos/'+p.githubRepo+'/contents/.github/workflows?ref='+encodeURIComponent(br),{headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+t}});
+    if(r.ok){var d=await r.json();v=Array.isArray(d)&&d.some(function(x){return /apk[^\/]*\.ya?ml$/i.test(x.name||'')})}
+  }catch(e){}
+  __apkChk[key]={t:Date.now(),v:v};
+  return v;
+}
+async function updateApkCard(){
+  var c=document.getElementById('apkCard');if(!c)return;
+  updateApkCardLocal();
+  if(c.style.display!=='none')return;
+  try{
+    var id=currentProjectId;
+    var list=await dbGetAll();
+    var p=list.find(function(x){return x.id===id});
+    if(await ghHasWorkflow(p)&&id===currentProjectId)c.style.display='';
+  }catch(e){}
+}
+function wfLint(t){
+  var L=String(t||'').replace(/\r/g,'').split('\n'),n=L.length,i,m,err=null,blk=-1,inB=[],top={};
+  function bad(k,msg){if(!err)err={line:k+1,msg:msg,text:(L[k]||'').trim()}}
+  function ind(s){return s.match(/^ */)[0].length}
+  for(i=0;i<n;i++){
+    var s=L[i],tr=s.trim();
+    if(blk>=0){
+      if(tr===''||ind(s)>blk){inB[i]=1;if(s.indexOf('${{')>-1&&s.indexOf('}}',s.indexOf('${{'))<0)bad(i,'Unclosed ${{ ... }}');continue}
+      blk=-1;
+    }
+    if(tr===''||tr.charAt(0)==='#'){inB[i]=1;continue}
+    if(/^\s*\t/.test(s))bad(i,'Tab used for indentation (use spaces)');
+    if(s.indexOf('${{')>-1&&s.indexOf('}}',s.indexOf('${{'))<0)bad(i,'Unclosed ${{ ... }}');
+    m=s.match(/(?:^\s*-\s+|:\s+)(["'])(.*)$/);
+    if(m&&m[2].indexOf(m[1])<0)bad(i,'Quote ('+m[1]+') is not closed');
+    if(/:\s*[|>][+-]?\d*\s*(#.*)?$/.test(s)||/^\s*-\s+[|>][+-]?\s*$/.test(s))blk=ind(s);
+    if(ind(s)===0&&(m=s.match(/^(['"]?[\w.\-]+['"]?)\s*:/)))top[m[1].replace(/['"]/g,'')]=i;
+  }
+  if(top.jobs!==undefined){
+    var jl=top.jobs,ji=-1,jobs=[],cur=null,ki=-1,st=null,si=-1,inSteps=false;
+    for(i=jl+1;i<n;i++){
+      if(inB[i])continue;
+      var s2=L[i],d=ind(s2);
+      if(d===0)break;
+      if(ji<0)ji=d;
+      if(d===ji){
+        m=s2.match(/^\s*([\w.\-]+)\s*:/);
+        if(m){cur={name:m[1],line:i,keys:{}};jobs.push(cur);ki=-1;st=null;si=-1;inSteps=false;continue}
+      }
+      if(!cur)continue;
+      if(ki<0&&d>ji)ki=d;
+      if(d===ki){
+        m=s2.match(/^\s*([\w.\-]+)\s*:/);
+        if(m){cur.keys[m[1]]=1;inSteps=(m[1]==='steps');if(inSteps){st=null;si=-1}}
+        continue;
+      }
+      if(inSteps&&d>ki||inSteps&&d===ki&&/^\s*-/.test(s2)){
+        if(/^\s*-(\s|$)/.test(s2)&&(si<0||d===si)){
+          if(st&&!st.ok)bad(st.line,'Step needs "uses:" or "run:"');
+          si=d;st={line:i,ok:false};
+        }
+        if(st&&/(^|\s)(uses|run)\s*:/.test(s2))st.ok=true;
+      }
+    }
+    if(st&&!st.ok)bad(st.line,'Step needs "uses:" or "run:"');
+    if(!jobs.length)bad(jl,'No jobs found under "jobs:"');
+    jobs.forEach(function(jb){
+      if(!jb.keys['runs-on']&&!jb.keys.uses)bad(jb.line,'Job "'+jb.name+'" is missing "runs-on:"');
+      else if(!jb.keys.steps&&!jb.keys.uses)bad(jb.line,'Job "'+jb.name+'" is missing "steps:"');
+    });
+  }
+  if(top.on===undefined&&top['true']===undefined)bad(0,'Missing top-level "on:" (when the workflow runs)');
+  if(top.jobs===undefined)bad(0,'Missing top-level "jobs:"');
+  return err;
+}
+function wfShow(){
+  var el=document.getElementById('apkWf'),c=document.getElementById('apkCard');
+  if(!el)return;
+  var wf=files.filter(function(f){return /(^|\/)\.github\/workflows\/[^\/]*apk[^\/]*\.ya?ml$/i.test(f.path||'')});
+  if(!wf.length)return;
+  var anyBad=false;
+  el.innerHTML=wf.map(function(f){
+    var has=typeof f.text==='string',r=has?wfLint(f.text):null;
+    if(r)anyBad=true;
+    var col=r?'#ff4d5a':(has?'#2fd27a':'#6c6e78');
+    var h='<div style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:'+col+';flex:none"></span><span class="wfn" style="'+(r?'color:#ff8a93':'')+'">'+esc(f.path.split('/').pop())+'</span></div>';
+    if(r)h+='<div style="color:#ff8a93;margin:3px 0 0 13px">Line '+r.line+': '+esc(r.msg)+'</div><div style="margin:2px 0 0 13px;padding:4px 8px;border-radius:8px;background:#2a0f13;color:#ffb3b9;font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere">'+esc(r.text)+'</div>';
+    return h;
+  }).join('<div style="height:6px"></div>');
+  if(c)c.style.borderColor='';
+}
+function updateApkCardLocal(){
+  var c=document.getElementById('apkCard');if(!c)return;
+  var ok=false;
+  try{ok=(typeof files!=='undefined')&&files.some(function(f){return /(^|\/)\.github\/workflows\/[^\/]*apk[^\/]*\.ya?ml$/i.test(f.path||'')})}catch(e){}
+  c.style.display=ok?'':'none';
+  try{wfShow()}catch(e){}
+  try{window.__apkHref=null;apkPrep()}catch(e){}
+}
+(function(){
+  var o=window.showTab;
+  if(typeof o==='function')window.showTab=function(n){var r=o.apply(this,arguments);try{updateApkCard()}catch(e){}return r};
+  window.addEventListener('load',function(){setTimeout(updateApkCard,600)});
+})();
+async function apkPrep(){
+  if(window.__apkBusy)return;
+  if(window.__apkHref&&window.__apkPid===currentProjectId)return;
+  window.__apkBusy=true;
+  try{
+    window.__apkHref=null;
+    var t=window.getToken?window.getToken():'';
+    if(!t)return;
+    var list=await dbGetAll();
+    var p=list.find(function(x){return x.id===currentProjectId});
+    if(!p||!p.githubRepo)return;
+    try{sessionStorage.setItem('mb_apk_tk',t);localStorage.setItem('mb_apk_tk',t)}catch(e){}
+    window.__apkPid=p.id;
+    window.__apkHref='apkbuild.html?pid='+encodeURIComponent(p.id)+'&name='+encodeURIComponent(p.name||'App')+'&repo='+encodeURIComponent(p.githubRepo)+'&branch='+encodeURIComponent(p.githubBranch||'main');
+  }finally{window.__apkBusy=false}
+}
+async function openStorePage(){
+  var t=window.getToken?window.getToken():'';
+  if(!t){showToast('Connect GitHub first (GitHub tab).','error');return}
+  var list=await dbGetAll();
+  var p=list.find(function(x){return x.id===currentProjectId});
+  if(!p){showToast('Open a project first.','error');return}
+  if(!p.githubRepo){showToast('Publish this project to GitHub first (Publish tab).','error');return}
+  try{sessionStorage.setItem('mb_apk_tk',t);localStorage.setItem('mb_apk_tk',t)}catch(e){}
+  window.__goingStore=true;location.href=(window.__storePlat==='apple'?'store-ios.html':'store-android.html')+'?pid='+encodeURIComponent(p.id)+'&name='+encodeURIComponent(p.name||'App')+'&repo='+encodeURIComponent(p.githubRepo)+'&branch='+encodeURIComponent(p.githubBranch||'main');
+}
+(function(){var b=document.getElementById('drawerStore');if(b)b.onclick=function(){var d=document.getElementById('drawer'),k=document.getElementById('drawerBackdrop');if(d)d.classList.remove('open');if(k)k.classList.remove('open');storeAsk()}})();
+async function openWorkflowPage(){
+  window.__goingWf=false;
+  var ov=document.createElement('div');ov.id='wfOpen';ov.style.cssText='position:fixed;inset:0;z-index:99999;background:#0b0c0f;display:flex;align-items:center;justify-content:center;color:#8f919b;font-weight:700;font-family:system-ui,-apple-system,sans-serif';ov.textContent='Opening...';document.body.appendChild(ov);
+  window.addEventListener('pageshow',function(){var x=document.getElementById('wfOpen');if(x)x.remove()});
+  try{await openWorkflowPage2()}finally{if(!window.__goingWf){var y=document.getElementById('wfOpen');if(y)y.remove()}}
+}
+async function openWorkflowPage2(){
+  var t=window.getToken?window.getToken():'';
+  if(!t){showToast('Connect GitHub first (GitHub tab).','error');return}
+  var list=await dbGetAll();
+  var p=list.find(function(x){return x.id===currentProjectId});
+  if(!p){showToast('Open a project first.','error');return}
+  if(!p.githubRepo){showToast('Publish this project to GitHub first (Publish tab).','error');return}
+  try{sessionStorage.setItem('mb_apk_tk',t);localStorage.setItem('mb_apk_tk',t)}catch(e){}
+  window.__goingWf=true;
+  location.href='workflow.html?pid='+encodeURIComponent(p.id)+'&name='+encodeURIComponent(p.name||'App')+'&repo='+encodeURIComponent(p.githubRepo)+'&branch='+encodeURIComponent(p.githubBranch||'main');
+}
+(function(){var b=document.getElementById('drawerWorkflow');if(b)b.onclick=function(){var d=document.getElementById('drawer'),k=document.getElementById('drawerBackdrop');if(d)d.classList.remove('open');if(k)k.classList.remove('open');openWorkflowPage()}})();
+function storeAsk(){
+  var old=document.getElementById('storeAsk');if(old)old.remove();
+  var o=document.createElement('div');o.id='storeAsk';
+  o.style.cssText='position:fixed;inset:0;z-index:99999;background:radial-gradient(120% 50% at 0% 0%,rgba(240,20,36,.16),transparent 60%),#0b0c0f;color:#fff;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 12px) 18px calc(env(safe-area-inset-bottom,0px) + 18px);font-family:system-ui,-apple-system,sans-serif;overflow:auto';
+  var card='display:flex;align-items:center;gap:16px;width:100%;padding:20px;border-radius:20px;border:1px solid #25262d;background:#14151a;color:#fff;font-family:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent';
+  var badge='flex:none;width:60px;height:60px;border-radius:18px;display:grid;place-items:center;';
+  o.innerHTML=
+   '<div style="display:flex;align-items:center;gap:12px"><button id="saX" aria-label="Close" style="width:40px;height:40px;border-radius:12px;border:1px solid #25262d;background:#14151a;color:#fff;font-size:22px;line-height:1;cursor:pointer">&#8249;</button><b style="font-size:16px;letter-spacing:.3px">Publish Store</b></div>'+
+   '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;max-width:520px;width:100%;margin:0 auto;padding:24px 0">'+
+     '<button id="saAnd" style="'+card+'"><span style="'+badge+'background:linear-gradient(135deg,#f01424,#c40d1b)"><svg viewBox="0 0 24 24" width="32" height="32" fill="#fff"><path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zM15.53 2.16l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48C13.85 1.23 12.95 1 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.97 3.26 6 5.01 6 7h12c0-1.99-.97-3.75-2.47-4.84z"/></svg></span><span style="flex:1;min-width:0"><b style="display:block;font-size:18px">Android</b><small style="display:block;color:#8f919b;font-size:13px;margin-top:3px">Google Play &middot; AAB file</small></span><span style="color:#8f919b;font-size:26px">&#8250;</span></button>'+
+     '<button id="saIos" style="'+card+'"><span style="'+badge+'background:#1b1c22;border:1px solid #2c2d35"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg></span><span style="flex:1;min-width:0"><b style="display:block;font-size:18px">iOS</b><small style="display:block;color:#8f919b;font-size:13px;margin-top:3px">App Store &middot; IPA file</small></span><span style="color:#8f919b;font-size:26px">&#8250;</span></button>'+
+   '</div>';
+  document.body.appendChild(o);
+  function go(p){window.__storePlat=p;window.__goingStore=false;o.innerHTML='<div style="margin:auto;text-align:center;color:#8f919b;font-weight:700"><div class="spinner" style="margin:0 auto 16px"></div>Opening...</div>';window.addEventListener('pageshow',function(){var x=document.getElementById('storeAsk');if(x)x.remove()});openStorePage().then(function(){if(!window.__goingStore)o.remove()})}
+  o.querySelector('#saAnd').onclick=function(){go('android')};
+  o.querySelector('#saIos').onclick=function(){go('apple')};
+  o.querySelector('#saX').onclick=function(){o.remove()};
+}
+function storeAskOld(){
+  var old=document.getElementById('storeAsk');if(old)old.remove();
+  var o=document.createElement('div');o.id='storeAsk';
+  o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding:14px';
+  var bs='height:54px;border-radius:14px;border:1px solid #2c2d35;background:#1b1c22;color:#fff;font-weight:800;font-size:16px;font-family:inherit;cursor:pointer';
+  o.innerHTML='<div style="width:100%;max-width:420px;background:#17181c;border:1px solid #25262c;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;color:#fff"><div style="font-weight:800;font-size:15px">Publish for which store?</div><button id="saAnd" style="'+bs+';background:#f01424;border-color:#f01424">Android (Google Play)</button><button id="saIos" style="'+bs+'">iOS (App Store)</button><button id="saX" style="'+bs+';height:46px;font-size:14px">Cancel</button></div>';
+  document.body.appendChild(o);
+  function go(p){window.__storePlat=p;window.__goingStore=false;o.innerHTML='<div style="margin:auto;text-align:center;color:#8f919b;font-weight:700"><div class="spinner" style="margin:0 auto 16px"></div>Opening...</div>';window.addEventListener('pageshow',function(){var x=document.getElementById('storeAsk');if(x)x.remove()});openStorePage().then(function(){if(!window.__goingStore)o.remove()})}
+  o.querySelector('#saAnd').onclick=function(){go('android')};
+  o.querySelector('#saIos').onclick=function(){go('apple')};
+  o.querySelector('#saX').onclick=function(){o.remove()};
+  o.onclick=function(e){if(e.target===o)o.remove()};
+}
+async function openApkPage(){
+  if(window.__apkHref&&window.__apkPid===currentProjectId){location.href=window.__apkHref;return}
+  var t=window.getToken?window.getToken():'';
+  if(!t){showToast('Connect GitHub first (GitHub tab).','error');return}
+  var list=await dbGetAll();
+  var p=list.find(function(x){return x.id===currentProjectId});
+  if(!p){showToast('Open a project first.','error');return}
+  if(!p.githubRepo){showToast('Publish this project to GitHub first (Publish tab).','error');return}
+  try{sessionStorage.setItem('mb_apk_tk',t);localStorage.setItem('mb_apk_tk',t);localStorage.setItem('mb_apk_tk',t)}catch(e){}
+  location.href='apkbuild.html?pid='+encodeURIComponent(p.id)+'&name='+encodeURIComponent(p.name||'App')+'&repo='+encodeURIComponent(p.githubRepo)+'&branch='+encodeURIComponent(p.githubBranch||'main');
+}
+</script>
+<!-- Service worker disabled for testing -->
+<script>
+  if('serviceWorker' in navigator){ 
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      for(let reg of regs){ if(reg.scope.indexOf('/__live/')===-1) reg.unregister(); }
+    }); 
+  }
+</script>
+</body></html>

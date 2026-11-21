@@ -1,0 +1,528 @@
+/* sync.js - sign in with Google, GitHub or email. Each account has its own private projects on this phone. */
+(function () {
+  if (typeof firebase === 'undefined') return;
+
+  const auth = firebase.auth(); auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+  const $ = (id) => document.getElementById(id);
+  const loginGate = $("loginGate");
+
+  let cloudUser = null;
+  let authKnown = false;
+  let rememberedUid = '';
+  let busy = false;
+  let signingOut = false;
+  let mode = 'signin';
+  try { rememberedUid = localStorage.getItem('mb_uid') || ''; } catch (e) {}
+
+  // Until Google answers, act as the account that was signed in last time so a refresh keeps your projects.
+  window.getCloudUser = () => cloudUser || ((!authKnown || window.__softSession) && rememberedUid ? { uid: rememberedUid, email: ((cachedProfile() || {}).email || '') } : null);
+  window.isCloudSignedIn = () => !!cloudUser;
+  Object.defineProperty(window, '__authKnown', { get: () => authKnown, configurable: true });
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function toast(m, t) { if (typeof window.showToast === 'function') window.showToast(m, t); }
+
+  // ---------- profile helpers (a "profile" is {displayName,email,photoURL,provider}) ----------
+  function profileOf(u) {
+    if (!u) return null;
+    const pd = u.providerData && u.providerData[0];
+    return { displayName: u.displayName || '', email: u.email || (pd && pd.email) || (function () { try { return localStorage.getItem('mb_gh_email_' + u.uid) || ''; } catch (e) { return ''; } })(), photoURL: (function () { try { return localStorage.getItem('mb_photo_' + u.uid) || ''; } catch (e) { return ''; } })() || u.photoURL || '', provider: (pd && pd.providerId) || '' };
+  }
+  function nameOf(p) { return p.displayName || (p.email ? p.email.split('@')[0] : 'Signed in'); }
+  function providerLabel(p) { return p.provider === 'google.com' ? 'Google' : p.provider === 'github.com' ? 'GitHub' : p.provider === 'password' ? 'Email' : ''; }
+  function avatarHtml(p, size) {
+    const letter = esc(nameOf(p).charAt(0).toUpperCase());
+    return '<span class="acc-av" style="width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * 0.42) + 'px"><span>' + letter + '</span>' +
+      (p.photoURL ? '<img src="' + esc(p.photoURL) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>';
+  }
+  function saveProfile(u) {
+    try {
+      if (u) localStorage.setItem('mb_profile', JSON.stringify(profileOf(u)));
+      else localStorage.removeItem('mb_profile');
+    } catch (e) {}
+  }
+  function cachedProfile() {
+    try { return JSON.parse(localStorage.getItem('mb_profile') || 'null'); } catch (e) { return null; }
+  }
+
+  // ---------- styles ----------
+  function injectCss() {
+    if ($('accStyle')) return;
+    const st = document.createElement('style'); st.id = 'accStyle';
+    st.textContent = [
+      '.acc-row{display:flex;align-items:center;gap:10px}',
+      '.acc-av{position:relative;display:inline-grid;place-items:center;border-radius:50%;background:#2f3a52;color:#cfe0ff;font-weight:800;flex-shrink:0;overflow:hidden}',
+      '.acc-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}',
+      '.acc-txt{flex:1;min-width:0}',
+      '.acc-txt b{display:block;font-size:14px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.acc-txt small{display:block;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.acc-badge{display:inline-block;margin-top:3px;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;background:#2f3a52;color:#cfe0ff;border-radius:999px;padding:2px 7px}',
+      '.acc-out{flex:none!important;padding:8px 12px!important;font-size:11px!important}',
+      '.drawer-section .drawer-acc{display:flex;align-items:center;gap:10px;background:#1c1d22;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:4px}',
+      '.drawer-section .drawer-acc-out{flex:none;padding:7px 10px;font-size:11px;border-radius:8px;background:#2a1418;border:1px solid #5a2430;color:#ff8a8a;transition:transform .14s ease}',
+      '.drawer-section .drawer-acc-out:active{transform:scale(.95)}',
+      '#loginGate .g-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 18px;border-radius:12px;font-size:15px;font-weight:800;border:0;cursor:pointer;font-family:inherit;transition:transform .14s ease,opacity .14s ease}',
+      '#loginGate .g-btn:active{transform:scale(.97)}',
+      '#loginGate .g-google{background:var(--red);color:#fff}',
+      '#loginGate .g-github{background:#24292f;color:#fff;border:1px solid #3a3f45;margin-top:10px}',
+      '#loginGate .g-main{background:#fff;color:#0d0e12}',
+      '#loginGate .g-or{display:flex;align-items:center;gap:10px;color:#6f707a;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;margin:18px 0 14px}',
+      '#loginGate .g-or::before,#loginGate .g-or::after{content:"";flex:1;height:1px;background:#2a2b31}',
+      '#loginGate .g-input{width:100%;box-sizing:border-box;background:#15161a;color:#fff;border:1px solid #303139;border-radius:12px;padding:14px;font-size:15px;outline:0;font-family:inherit;margin-bottom:10px}',
+      '#loginGate .g-input:focus{border-color:var(--red)}',
+      '#loginGate .g-links{display:flex;justify-content:space-between;gap:10px;margin-top:10px}',
+      '#loginGate .g-link{background:none;border:0;color:#a2a3ad;font-size:12px;font-weight:700;cursor:pointer;padding:6px 2px;font-family:inherit}',
+      '#loginGate .g-msg{min-height:18px;font-size:12.5px;line-height:1.5;margin-top:12px}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  // ---------- account UI (home card + menu) ----------
+  function renderAuthUi(p) {
+    const box = $("authBox");
+    if (!box) return;
+    if (!p) { box.innerHTML = '<p class="note">Not signed in.</p>'; return; }
+    const prov = providerLabel(p);
+    box.innerHTML = '<div class="acc-row">' + avatarHtml(p, 40) +
+      '<div class="acc-txt"><b>' + esc(nameOf(p)) + '</b><small>' + esc(p.email) + '</small>' + (prov ? '<em class="acc-badge">' + prov + '</em>' : '') + '</div>' +
+      '<button class="btn secondary acc-out" onclick="window.signOutGoogle()">Sign out</button></div>';
+  }
+  function renderDrawerAccount(p) {
+    const box = $("drawerAccount");
+    if (!box) return;
+    if (!p) { box.innerHTML = ''; return; }
+    box.innerHTML = '<div class="drawer-acc">' + avatarHtml(p, 34) +
+      '<div class="acc-txt"><b>' + esc(nameOf(p)) + '</b><small>' + esc(p.email) + '</small></div>' +
+      '<button class="drawer-acc-out" onclick="window.signOutGoogle()">Sign out</button></div>';
+  }
+  function updateGreeting(p) {
+    const heroEyebrow = $('heroEyebrow');
+    if (!heroEyebrow) return;
+    if (p) heroEyebrow.textContent = 'WELCOME BACK, ' + nameOf(p).split(' ')[0].toUpperCase();
+    else heroEyebrow.textContent = 'YOUR LOCAL WORKSPACE';
+  }
+  function showProfile(p) { renderAuthUi(p); renderDrawerAccount(p); updateGreeting(p); }
+  window.__refreshProfile = function () { try { var u = auth.currentUser; if (u) { saveProfile(u); showProfile(profileOf(u)); } } catch (e) {} };
+
+  function resetScreen() {
+    if (typeof files !== 'undefined') files = [];
+        if (typeof currentProjectId !== 'undefined') currentProjectId = null;
+    if (typeof window.__edClear === 'function') window.__edClear();
+    if (typeof setCurrentProjectName === 'function') setCurrentProjectName('No project loaded');
+    // Only go Home on real sign-out — not while you are mid-edit
+    try {
+      if (typeof showTab === 'function' && document.getElementById('loginGate') &&
+          document.getElementById('loginGate').style.display !== 'none') {
+        showTab('home');
+      }
+    } catch (e) {}
+  }
+
+  // ---------- GitHub token for an account (so "Continue with GitHub" also unlocks your repos) ----------
+  async function saveGithubTokenFor(uid, token) {
+    try {
+      const db = await openDB();
+      const tx = db.transaction(DB_STORE, 'readwrite');
+      tx.objectStore(DB_STORE).put(token, 'githubToken_' + uid);
+      await new Promise(function (r) { tx.oncomplete = r; tx.onerror = r; tx.onabort = r; });
+    } catch (e) {}
+  }
+  async function afterGithub(res) {
+    const __enr = enrichGithubProfile(res).catch(function () {});
+    try { await __afterGithubCore(res); } finally { await __enr; }
+  }
+  async function enrichGithubProfile(res) {
+    const tok = res && res.credential && res.credential.accessToken, u = res && res.user;
+    if (!tok || !u) return;
+    const h = { headers: { Authorization: 'Bearer ' + tok } };
+    const r = await fetch('https://api.github.com/user', h); if (!r.ok) return;
+    const g = await r.json();
+    let email = g.email || u.email || '';
+    if (!email) {
+      try {
+        const er = await fetch('https://api.github.com/user/emails', h);
+        if (er.ok) { const L = await er.json(); const pr = (L || []).find(function (x) { return x.primary && x.verified; }) || (L || [])[0]; if (pr) email = pr.email; }
+      } catch (e) {}
+    }
+    if (email) { try { localStorage.setItem('mb_gh_email_' + u.uid, email); } catch (e) {} }
+    if (!u.displayName || !u.photoURL) {
+      try { await u.updateProfile({ displayName: u.displayName || g.name || g.login || '', photoURL: u.photoURL || g.avatar_url || '' }); } catch (e) {}
+    }
+    const cu = auth.currentUser || u;
+    saveProfile(cu); showProfile(profileOf(cu));
+  }
+  async function __afterGithubCore(res) {
+  const tok = res && res.credential && res.credential.accessToken;
+  if (tok && res.user) {
+    await saveGithubTokenFor(res.user.uid, tok); try { localStorage.setItem('mb_gh_token_at', String(Date.now())); } catch (e) {}
+    
+    // NEW: Save this token globally so the Projects tab can use it!
+    if (typeof ghToken !== 'undefined') {
+      ghToken = tok; 
+    }
+    try { localStorage.setItem('mb_gh_active_token', tok); } catch(e) {}
+
+    if (typeof window.__reloadGithub === 'function') await window.__reloadGithub();
+  }
+}
+
+  // ---------- sign-in screen ----------
+  function setMsg(t, ok) { const m = $('gateMsg'); if (!m) return; m.textContent = t || ''; m.style.color = ok ? '#3ddc84' : '#ff8a8a'; }
+  function setBusy(b) {
+    busy = b;
+    ['gateLoginBtn', 'gateGithubBtn', 'gateEmailBtn'].forEach(function (id) { const el = $(id); if (el) { el.disabled = b; el.style.opacity = b ? '.6' : '1'; } });
+  }
+  function friendly(e) {
+    switch (e && e.code) {
+      case 'auth/invalid-credential': case 'auth/wrong-password': case 'auth/user-not-found': return 'Wrong email or password.';
+      case 'auth/invalid-email': return 'That email address does not look right.';
+      case 'auth/email-already-in-use': return 'This email already has an account. Tap "Have an account? Sign in".';
+      case 'auth/weak-password': return 'Use a password with at least 6 characters.';
+      case 'auth/too-many-requests': return 'Too many tries. Wait a few minutes and try again.';
+      case 'auth/network-request-failed': return 'No internet connection. Check it and try again.';
+      case 'auth/operation-not-allowed': return 'This sign-in method is not turned on in Firebase yet.';
+      case 'auth/account-exists-with-different-credential': return 'This email already has an account with another sign-in method. Sign in with that one first.';
+      case 'auth/unauthorized-domain': return 'This website address is not allowed in Firebase yet (Authentication > Settings > Authorized domains).';
+      case 'auth/user-disabled': return 'This account has been turned off.';
+      default: return (e && e.message) || 'Something went wrong. Try again.';
+    }
+  }
+  function quiet(e) { return e && (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request'); }
+
+  function showAuthLoader() {
+  try { localStorage.setItem('mb_loading', '1'); } catch (e) {}
+  window.__ldNote = function (t) { var n = document.getElementById('authLoaderNote'); if (n) n.textContent = t || ''; };
+  var ld = document.getElementById('authLoader');
+  if(!ld) {
+      ld = document.createElement('div');
+      ld.id = 'authLoader';
+      ld.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#0d0e12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#a2a3ad;font-family:system-ui,sans-serif;font-weight:bold;';
+      ld.innerHTML = '<div style="width:30px;height:30px;border:3px solid #2a2c34;border-top-color:var(--red);border-radius:50%;animation:mb-spin .8s linear infinite"></div><div>Loading workspace...</div><div id="authLoaderNote" style="font-size:12px;color:#777;font-weight:600;min-height:16px"></div>';
+      document.body.appendChild(ld);
+  }
+}
+function hideAuthLoader() {
+  try { localStorage.removeItem('mb_loading'); } catch (e) {}
+  var ld = document.getElementById('authLoader');
+  if (ld) ld.remove();
+}
+
+async function googleLogin() {
+  if (busy) return;
+  setBusy(true); setMsg('');
+  showAuthLoader();
+  const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+      try {
+    await auth.signInWithPopup(provider);
+  } catch (e) {
+    if (e.code === 'auth/popup-blocked') {
+      setMsg('Please allow popups for this site to sign in.');
+      hideAuthLoader();
+    } else if (!quiet(e)) { 
+      setMsg(friendly(e)); 
+      hideAuthLoader(); 
+    } else { 
+      hideAuthLoader(); 
+    }
+  }
+  setBusy(false);
+}
+
+  async function githubLogin() {
+  if (busy) return;
+  setBusy(true); setMsg('');
+  showAuthLoader();
+  const provider = new firebase.auth.GithubAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    provider.addScope('repo');
+    try {
+        const res = await auth.signInWithPopup(provider);
+  await afterGithub(res);
+} catch (e) {
+  if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') {
+    try { await auth.signInWithRedirect(provider); return; } catch (e2) { setMsg(friendly(e2)); }
+  } else if (e.code === 'auth/account-exists-with-different-credential') {
+    setMsg('You already have a Google account with this email. Please log in with Google, then go to the GitHub tab to link your repos.', false);
+  } else if (!quiet(e)) { 
+    setMsg(friendly(e)); 
+  }
+}
+    setBusy(false);
+  }
+
+  async function emailSubmit() {
+    if (busy) return;
+    const email = (($('gateEmail') && $('gateEmail').value) || '').trim();
+    const pw = ($('gatePassword') && $('gatePassword').value) || '';
+    if (!email || !pw) { setMsg('Enter your email and password.'); return; }
+    window.__gateNameVal = (($('gateName') && $('gateName').value) || '').trim();
+    ['gateEmail', 'gatePassword', 'gateName'].forEach(function (id) { if ($(id)) $(id).value = ''; });
+setBusy(true); setMsg('');
+showAuthLoader();
+try {
+if (mode === 'signup') {
+      const name = window.__gateNameVal || '';
+      const cred = await auth.createUserWithEmailAndPassword(email, pw);
+      if (name) {
+        await cred.user.updateProfile({ displayName: name });
+        const u = auth.currentUser || cred.user;
+        saveProfile(u); showProfile(profileOf(u));
+      }
+    } else {
+      await auth.signInWithEmailAndPassword(email, pw);
+    }
+  } catch (e) { 
+    setMsg(friendly(e)); 
+    // Clear the inputs on error
+    if ($('gateEmail')) $('gateEmail').value = '';
+    if ($('gatePassword')) $('gatePassword').value = '';
+    if ($('gateName')) $('gateName').value = '';
+    hideAuthLoader();
+  }
+  setBusy(false);
+}
+
+  async function forgotPassword() {
+    const email = (($('gateEmail') && $('gateEmail').value) || '').trim();
+    if (!email) { setMsg('Type your email above first, then tap Forgot password.'); return; }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      setMsg('Reset link sent to ' + email + '. Check your inbox and spam.', true);
+    } catch (e) { setMsg(friendly(e)); }
+  }
+
+  function applyMode() {
+    const up = mode === 'signup';
+    if ($('gateNameWrap')) $('gateNameWrap').hidden = !up;
+    if ($('gateEmailBtn')) $('gateEmailBtn').textContent = up ? 'Create account' : 'Sign in with email';
+    if ($('gateModeBtn')) $('gateModeBtn').textContent = up ? 'Have an account? Sign in' : 'New here? Create account';
+    if ($('gateForgot')) $('gateForgot').hidden = up;
+    if ($('gatePassword')) $('gatePassword').autocomplete = up ? 'new-password' : 'current-password';
+    setMsg('');
+  }
+
+  function wireGate() {
+  // Password Toggle
+  var toggleBtn = $('togglePasswordBtn');
+  if (toggleBtn) {
+    toggleBtn.onclick = function() {
+      var pw = $('gatePassword'), eyeO = $('eyeOpen'), eyeC = $('eyeClosed');
+      if (pw.type === 'password') {
+        pw.type = 'text'; eyeO.style.display = 'none'; eyeC.style.display = 'block';
+      } else {
+        pw.type = 'password'; eyeO.style.display = 'block'; eyeC.style.display = 'none';
+      }
+    };
+  }
+  
+  if ($('gateLoginBtn')) $('gateLoginBtn').onclick = googleLogin;
+    if ($('gateGithubBtn')) $('gateGithubBtn').onclick = githubLogin;
+    if ($('gateEmailBtn')) $('gateEmailBtn').onclick = emailSubmit;
+    if ($('gateForgot')) $('gateForgot').onclick = forgotPassword;
+    if ($('gateModeBtn')) $('gateModeBtn').onclick = function () { mode = mode === 'signin' ? 'signup' : 'signin'; applyMode(); };
+    const pw = $('gatePassword');
+    if (pw && pw.addEventListener) pw.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); emailSubmit(); } });
+    applyMode();
+  }
+
+  // Redirect sign-in comes back here (popup blocked). Catch errors and the GitHub token.
+
+auth.getRedirectResult().then(async function (res) {
+  if (res && res.credential && res.credential.providerId === 'github.com') await afterGithub(res);
+}).catch(function (error) {
+  if (error.code !== 'auth/redirect-cancelled-by-user') setMsg(friendly(error));
+  setBusy(false);
+});
+
+  // ---------- why did it sign out? ----------
+  var __lastTokErr = '';
+  function __logAuth(msg) {
+    try { var L = JSON.parse(localStorage.getItem('mb_authlog') || '[]'); L.push(new Date().toISOString() + ' ' + msg); localStorage.setItem('mb_authlog', JSON.stringify(L.slice(-30))); } catch (e) {}
+  }
+  async function __checkSession() {
+    var cu = auth.currentUser; if (!cu) return;
+    try { await cu.getIdToken(); } catch (e) {
+      __lastTokErr = (e && e.code) || String(e);
+      __logAuth('token refresh failed: ' + __lastTokErr);
+      if (window.showToast) window.showToast('Sign-in check failed: ' + __lastTokErr, 'error');
+    }
+  }
+  setInterval(__checkSession, 30 * 60 * 1000);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') __checkSession(); });
+  auth.onAuthStateChanged(async function (u) {
+    if (u) { __logAuth('signed in'); return; }
+    if (!rememberedUid || signingOut) return;
+    var kept = 'n/a';
+    try { if (navigator.storage && navigator.storage.persisted) kept = String(await navigator.storage.persisted()); } catch (e) {}
+    var why = 'online=' + navigator.onLine + ', storage protected=' + kept + (__lastTokErr ? ', last error=' + __lastTokErr : '');
+    __logAuth('signed out by itself: ' + why);
+    if (window.showToast) window.showToast('Signed out by itself (' + why + ')', 'error');
+  });
+  // ---------- login state watcher ----------
+  auth.onAuthStateChanged(async (user) => {
+  const previousUid = rememberedUid;
+  if (!user && previousUid && !signingOut && !window.__authRetried) {
+    window.__authRetried = true;
+    await new Promise(function (r) { setTimeout(r, 3000); });
+    user = auth.currentUser || null;
+  }
+  if (user) window.__authRetried = false;
+  authKnown = true;
+  cloudUser = user;
+  
+  // Hide the loading spinner and show the form
+const gateLoading = document.getElementById('gateLoading');
+const gateContent = document.getElementById('gateContent');
+if (gateLoading) gateLoading.style.display = 'none';
+if (gateContent) gateContent.style.display = 'block';
+
+// NEW: Unhide the app now that we know the login state
+document.body.classList.remove('auth-loading'); document.documentElement.classList.add('auth-ready');
+
+  const prof = profileOf(user);
+  saveProfile(user);
+  showProfile(prof);
+
+    if (user) {
+      try { localStorage.setItem('mb_uid', user.uid); } catch (e) {}
+      rememberedUid = user.uid;
+      window.__softSession = false;
+      var __sp = document.getElementById('softPill'); if (__sp) __sp.remove();
+      try {
+        if (previousUid && previousUid !== user.uid) { clearTimeout(window.__cpT); window.__cpLatest = null; }
+        else if (window.__cpLatest && window.cloudProj) setTimeout(function () { window.cloudProj.save(window.__cpLatest); }, 4000);
+      } catch (e) {}
+        if (loginGate) loginGate.style.display = "none";
+setBusy(false);
+if (previousUid && previousUid !== user.uid) resetScreen();
+} else {
+      if (previousUid && !signingOut) {
+        window.__softSession = true; try { localStorage.removeItem('mb_restored_' + previousUid); } catch (e) {}
+        try { localStorage.setItem('mb_lastout', new Date().toISOString()); } catch (e) {}
+        if (loginGate) loginGate.style.display = "none";
+        setBusy(false);
+        toast('Cloud session expired. Your projects are safe on this phone. Tap the red button to sign in and resume backup.', 'error');
+        if (!document.getElementById('softPill')) {
+          var sp = document.createElement('button'); sp.id = 'softPill'; sp.textContent = 'Cloud backup paused · Sign in';
+          sp.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:96px;z-index:9999;background:#f01428;color:#fff;border:0;border-radius:999px;padding:10px 16px;font-weight:700;font-size:14px';
+          sp.onclick = function () { if (loginGate) loginGate.style.display = 'flex'; };
+          document.body.appendChild(sp);
+        }
+        if (typeof window.__refreshProjects === "function") await window.__refreshProjects();
+        return;
+      }
+      window.__softSession = false;
+      try { clearTimeout(window.__cpT); window.__cpLatest = null; } catch (e) {}
+      try { localStorage.removeItem('mb_uid'); localStorage.removeItem('mb_restored_' + previousUid); } catch (e) {}
+      if (previousUid && !signingOut) { try { localStorage.setItem('mb_lastout', new Date().toISOString()); } catch (e) {} toast('Your session ended on its own. Please sign in again.', 'error'); }
+      rememberedUid = '';
+      if (loginGate) loginGate.style.display = "flex";
+      setBusy(false);
+      resetScreen();
+    }
+      if (typeof window.__refreshProjects === "function") await window.__refreshProjects();
+  if (user && typeof window.__cloudSweep === "function") window.__cloudSweep();
+  if (user && typeof window.__restoreFromCloud === "function") {
+      if (!localStorage.getItem('mb_restored_' + user.uid) || localStorage.getItem('mb_loading') === '1') showAuthLoader();
+      window.__restoreSkip = false;
+      var skipT = setTimeout(function () {
+        var ld = document.getElementById('authLoader');
+        if (ld && !document.getElementById('authSkip')) {
+          var b = document.createElement('button'); b.id = 'authSkip'; b.textContent = 'Open anyway';
+          b.style.cssText = 'margin-top:10px;background:#2a2c34;color:#fff;border:0;border-radius:8px;padding:10px 18px;font-weight:700;font-size:14px';
+          b.onclick = function () { window.__restoreSkip = true; };
+          ld.appendChild(b);
+        }
+      }, 60000);
+      var tries = 0;
+      while (!window.__restoreSkip && auth.currentUser) {
+        await window.__restoreFromCloud();
+        if (window.__cloudRestoreDone) break;
+        tries++;
+        if (window.__ldNote) window.__ldNote('Still loading your projects… (try ' + (tries + 1) + ')');
+        await new Promise(function (r) { setTimeout(r, Math.min(1500 + tries * 1000, 6000)); });
+      }
+      clearTimeout(skipT);
+      if (typeof window.__refreshProjects === "function") await window.__refreshProjects();
+  }
+  
+  // Wait for the live address and APK card to load before hiding the spinner
+  if (user) {
+      try {
+          var livePromise = (typeof refreshHomeLive === "function") ? refreshHomeLive() : Promise.resolve();
+          var apkPromise = (typeof updateApkCard === "function") ? updateApkCard() : Promise.resolve();
+          
+          // Wait for both, but max 3 seconds so the app doesn't get stuck
+          await Promise.race([
+              Promise.all([livePromise, apkPromise]),
+              new Promise(function(resolve) { setTimeout(resolve, 3000); })
+          ]);
+      } catch (err) {}
+  }
+  hideAuthLoader();
+});
+
+  // ---------- sign out, in steps ----------
+  function editorHasUnsaved() {
+    const es = $('editorStatus');
+    return !!(es && /\u2022\s*$/.test(es.textContent || ''));
+  }
+  window.signOutGoogle = async function () {
+  if (signingOut) return;
+  if (typeof closeDrawer === 'function') { try { closeDrawer(); } catch (e) {} }
+    const who = (cloudUser && (cloudUser.email || cloudUser.displayName)) || 'this account';
+    const ask = typeof window.showConfirm === 'function' ? window.showConfirm : null;
+    if (ask) {
+      // Step 1: are you sure
+      const ok1 = await ask('You are signed in as ' + who + '. Your projects stay saved on this phone for this account and come back when you sign in again.', { title: 'Sign out?', confirmText: 'Continue', cancelText: 'Stay signed in' });
+      if (!ok1) return;
+      // Step 2: unsaved edits warning
+      if (editorHasUnsaved()) {
+        const ok2 = await ask('You have unsaved edits in the editor. If you sign out now they will be lost. Go back and tap the save button first.', { title: 'Unsaved edits', confirmText: 'Sign out anyway', cancelText: 'Go back' });
+        if (!ok2) return;
+      }
+    }
+    // Step 3: save, then sign out
+    try { localStorage.removeItem('mb_gh_active_token'); } catch(e) {}
+    if (typeof ghToken !== 'undefined') ghToken = '';
+    if ($('githubLoggedIn')) $('githubLoggedIn').hidden = true;
+    if ($('githubLoggedOut')) $('githubLoggedOut').hidden = false;
+    signingOut = true; const so = document.createElement('div'); 
+so.style.cssText = 'position:fixed;inset:0;background:#0d0e12;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#a2a3ad;font-size:16px;font-weight:800;font-family:system-ui,sans-serif'; 
+so.innerHTML = '<div style="width:34px;height:34px;border:3px solid #2a2c34;border-top-color:var(--red);border-radius:50%;animation:mb-spin .8s linear infinite;margin-bottom:18px;"></div><div>Signing out...</div>'; document.body.appendChild(so);
+    try {
+      toast('Saving your projects\u2026');
+if (typeof __flushProjects === 'function') await __flushProjects();
+
+// Show the loading screen immediately
+if (loginGate) loginGate.style.display = "flex";
+if ($('gateLoading')) $('gateLoading').style.display = 'block';
+if ($('gateContent')) $('gateContent').style.display = 'none';
+
+['gateEmail', 'gatePassword', 'gateName'].forEach(function (id) { if ($(id)) $(id).value = ''; });
+window.__gateNameVal = '';
+await auth.signOut();
+      toast('Signed out');
+      } catch (e) {
+    toast('Could not sign out. Try again.', 'error');
+  }
+  signingOut = false;
+  // Keep the spinner on screen for a moment so the login gate can load underneath it
+  setTimeout(function() {
+    try { so.remove(); } catch (e0) {}
+  }, 500);
+};
+
+  // ---------- start ----------
+  injectCss();
+  wireGate();
+  // Show the last signed-in profile at once, so the account card does not blink on refresh
+  try { if (localStorage.getItem('mb_loading') === '1') showAuthLoader(); } catch (e) {}
+  const cp = cachedProfile();
+  if (rememberedUid && cp) showProfile(cp);
+})();
