@@ -65,7 +65,25 @@ async function open(){
   if(on)sh.scrollTop=on.offsetTop-sh.clientHeight/2+on.offsetHeight/2;
 var ta0=document.getElementById('editorTextarea');if(ta0)ta0.blur();window.__edSkipRestore=Date.now()+1500;
 }
-b.addEventListener('click',function(e){e.stopPropagation();if(bd.classList.contains('open'))close();else open()});
+// The Projects button now opens the real Projects tab (same cards as Multi Bundle: Preview / Edit / Sync / ...).
+function mbBackBar(){
+  var v=document.getElementById('projectsListView');
+  if(!v||document.getElementById('mbBackToEditor'))return;
+  var bar=document.createElement('button');bar.type='button';bar.id='mbBackToEditor';
+  bar.style.cssText='display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:10px 16px;border:1px solid #303139;border-radius:12px;background:#20222a;color:#fff;font:700 14px system-ui,sans-serif';
+  bar.innerHTML='<span style="font-size:22px;line-height:1">&#8249;</span>Back to editor';
+  bar.onclick=function(){if(typeof window.showTab==='function')window.showTab('editor')};
+  v.insertBefore(bar,v.firstChild);
+}
+b.addEventListener('click',async function(e){
+  e.stopPropagation();
+  close();
+  var ta=document.getElementById('editorTextarea');if(ta)ta.blur();
+  try{var sv=document.getElementById('editorSaveBtn');if(sv&&!sv.disabled){sv.click();await new Promise(function(r){setTimeout(r,300)})}}catch(x){}
+  try{if(typeof window.saveCurrentProject==='function')await window.saveCurrentProject()}catch(x){}
+  mbBackBar();
+  if(typeof window.showTab==='function')window.showTab('projects');
+});
 var __st=window.showTab;
 if(typeof __st==='function'&&!__st.__mbp){
   window.showTab=function(){
