@@ -12,7 +12,7 @@ if not os.path.isfile(logo_path):
     print('mbicons: no logo.png, keeping default icons')
     sys.exit(0)
 
-SOFT = (201, 198, 190)      # soft warm white for the splash symbol
+SOFT = (233, 231, 226)      # soft warm white for the splash symbol
 SPLASH_BG = '#15161a'       # same as the app header
 
 logo = Image.open(logo_path).convert('RGB')
@@ -37,6 +37,9 @@ big = Image.new('L', (GW * SS, GH * SS), 0)
 dr = ImageDraw.Draw(big)
 for poly in SHAPES:
     dr.polygon([(x * (GW * SS - 1), y * (GH * SS - 1)) for x, y in poly], fill=255)
+glyph = big.resize((GW, GH), Image.LANCZOS)
+
+
 glyph = big.resize((GW, GH), Image.LANCZOS)
 
 
@@ -82,7 +85,8 @@ with open(os.path.join(res, 'values', 'ic_launcher_background.xml'), 'w') as f:
             '    <color name="ic_launcher_background">%s</color>\n</resources>\n' % hexbg)
 
 # 2) Splash: dark background, only the soft white </> symbol (no full logo)
-save(glyph_layer(1152, 0.46, SOFT), 'drawable-nodpi', 'splash_glyph.png')
+for _d2, _px in [('mdpi', 288), ('hdpi', 432), ('xhdpi', 576), ('xxhdpi', 864), ('xxxhdpi', 1152)]:
+    save(glyph_layer(_px, 0.46, SOFT), 'drawable-' + _d2, 'splash_glyph.png')
 for root, _, names in os.walk(res):
     for n in names:
         if n == 'splash.png':
