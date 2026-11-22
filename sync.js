@@ -74,6 +74,10 @@
       '#loginGate .g-or::before,#loginGate .g-or::after{content:"";flex:1;height:1px;background:#2a2b31}',
       '#loginGate .g-input{width:100%;box-sizing:border-box;background:#15161a;color:#fff;border:1px solid #303139;border-radius:12px;padding:14px;font-size:15px;outline:0;font-family:inherit;margin-bottom:10px}',
       '#loginGate .g-input:focus{border-color:var(--red)}',
+      '#loginGate .g-input{background:#2d2f31;border-color:#5f6368}',
+      '#loginGate .g-or{color:#9aa0a6}',
+      '#loginGate .g-or::before,#loginGate .g-or::after{background:#5f6368}',
+      '#loginGate .g-github{background:#2d2f31;border-color:#5f6368}',
       '#loginGate .g-links{display:flex;justify-content:space-between;gap:10px;margin-top:10px}',
       '#loginGate .g-link{background:none;border:0;color:#a2a3ad;font-size:12px;font-weight:700;cursor:pointer;padding:6px 2px;font-family:inherit}',
       '#loginGate .g-msg{min-height:18px;font-size:12.5px;line-height:1.5;margin-top:12px}'
