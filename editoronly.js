@@ -16,6 +16,26 @@
     var w = function (name) { var t = MAP[name] || name, r = s(t); if (t === 'editor') setTimeout(full, 0); return r; };
     w.__eo = 1; window.showTab = w;
   }
+  function bg(el) {
+    while (el && el !== document.documentElement) {
+      var c = getComputedStyle(el).backgroundColor, m = c.match(/[\d.]+/g);
+      if (m && (m.length < 4 || parseFloat(m[3]) > 0.9)) return '#' + [0, 1, 2].map(function (i) { return ('0' + Math.round(+m[i]).toString(16)).slice(-2); }).join('');
+      el = el.parentElement;
+    }
+    return '#0d0e12';
+  }
+  var lastBars = '';
+  function bars() {
+    try {
+      var P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.FolderAccess;
+      if (!P || !P.setBars) return;
+      var w = window.innerWidth, h = window.innerHeight;
+      var t = bg(document.elementFromPoint(w / 2, 3)), b = bg(document.elementFromPoint(w / 2, h - 3));
+      if (t + b !== lastBars) { lastBars = t + b; P.setBars({ top: t, bottom: b }); }
+    } catch (e) {}
+  }
+  setInterval(bars, 700);
+  window.addEventListener('load', function () { setTimeout(bars, 300); });
   document.addEventListener('DOMContentLoaded', wrap);
   window.addEventListener('load', function () { wrap(); full(); });
 })();

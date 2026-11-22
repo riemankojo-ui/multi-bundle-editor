@@ -30,6 +30,31 @@ import java.io.OutputStream;
 @CapacitorPlugin(name = "FolderAccess")
 public class FolderAccessPlugin extends Plugin {
 
+    @PluginMethod
+    public void setBars(final PluginCall call) {
+        final String top = call.getString("top", "#15161a");
+        final String bottom = call.getString("bottom", "#0d0e12");
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    android.view.Window w = getActivity().getWindow();
+                    int t = android.graphics.Color.parseColor(top);
+                    int b = android.graphics.Color.parseColor(bottom);
+                    w.setStatusBarColor(t);
+                    w.setNavigationBarColor(b);
+                    w.getDecorView().setBackgroundColor(t);
+                    androidx.core.view.WindowInsetsControllerCompat c = androidx.core.view.WindowCompat.getInsetsController(w, w.getDecorView());
+                    c.setAppearanceLightStatusBars(androidx.core.graphics.ColorUtils.calculateLuminance(t) > 0.5);
+                    c.setAppearanceLightNavigationBars(androidx.core.graphics.ColorUtils.calculateLuminance(b) > 0.5);
+                    call.resolve();
+                } catch (Exception e) {
+                    call.reject("bad color");
+                }
+            }
+        });
+    }
+
     // Step 1: only opens the "save as" dialog. No file data is sent with this call.
     @PluginMethod
     public void saveAs(PluginCall call) {
