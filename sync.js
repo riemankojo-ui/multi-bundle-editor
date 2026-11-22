@@ -215,24 +215,44 @@ function hideAuthLoader() {
   if (ld) ld.remove();
 }
 
+// Native Google sign-in (Android app): shows the phone's own "Choose an account" popup.
+// No browser opens, so there is nothing to "return" from. Falls back to the normal popup on the web.
+function nativeGoogle() {
+  try {
+    var C = window.Capacitor;
+    if (!(C && C.isNativePlatform && C.isNativePlatform())) return null;
+    if (C.isPluginAvailable && !C.isPluginAvailable('FirebaseAuthentication')) return null;
+    return C.registerPlugin ? C.registerPlugin('FirebaseAuthentication') : (C.Plugins && C.Plugins.FirebaseAuthentication) || null;
+  } catch (e) { return null; }
+}
+
 async function googleLogin() {
   if (busy) return;
   setBusy(true); setMsg('');
   showAuthLoader();
-  const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-      try {
-    await auth.signInWithPopup(provider);
-  } catch (e) {
-    if (e.code === 'auth/popup-blocked') {
-      setMsg('Please allow popups for this site to sign in.');
-      hideAuthLoader();
-    } else if (!quiet(e)) { 
-      setMsg(friendly(e)); 
-      hideAuthLoader(); 
-    } else { 
-      hideAuthLoader(); 
+  const native = nativeGoogle();
+  try {
+    if (native) {
+      // 1) phone shows the account chooser, 2) we hand Google's token to the Firebase web SDK
+      const r = await native.signInWithGoogle({ skipNativeAuth: true });
+      const idToken = r && r.credential && r.credential.idToken;
+      if (!idToken) throw { code: 'mb/no-token', message: 'Google did not return a sign-in token. Try again.' };
+      const cred = firebase.auth.GoogleAuthProvider.credential(idToken, (r.credential && r.credential.accessToken) || null);
+      await auth.signInWithCredential(cred);
+    } else {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      await auth.signInWithPopup(provider);
     }
+  } catch (e) {
+    var msg = String((e && (e.message || e.code)) || '');
+    var cancelled = quiet(e) || /cancel|dismiss|12501|16:/i.test(msg);
+    if (e && e.code === 'auth/popup-blocked') {
+      setMsg('Please allow popups for this site to sign in.');
+    } else if (!cancelled) {
+      setMsg(friendly(e));
+    }
+    hideAuthLoader();
   }
   setBusy(false);
 }
@@ -511,6 +531,7 @@ if ($('gateContent')) $('gateContent').style.display = 'none';
 ['gateEmail', 'gatePassword', 'gateName'].forEach(function (id) { if ($(id)) $(id).value = ''; });
 window.__gateNameVal = '';
 await auth.signOut();
+try { var __n = nativeGoogle(); if (__n) await __n.signOut(); } catch (e) {}
       toast('Signed out');
       } catch (e) {
     toast('Could not sign out. Try again.', 'error');
