@@ -738,3 +738,4 @@ body{padding-bottom:0!important}
 body:not(.kb-open) #editorPage:not([hidden]) .editor-shell:not(.fullscreen){height:calc(100dvh - 68px)!important;min-height:0!important}
 .drawer-nav a:not([data-tab="editor"]):not([data-tab="projects"]){display:none!important}
 #drawerGithub,#drawerStore,#drawerWorkflow,#drawerCloud{display:none!important}
+#editorFullBtn{display:none!important}

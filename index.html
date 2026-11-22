@@ -9,7 +9,7 @@
   }
 </script>
 </head>
-<body class="auth-loading">
+<body class="auth-loading editor-full">
 <header class="app-head" style="position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;height:calc(44px + max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px)));padding:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px)) 10px 0;background:#15161a;border-bottom:1px solid #303139">
 
   <button id="menuBtn" class="head-btn" aria-label="Menu">
@@ -362,7 +362,7 @@
 <section id="settingsPage" class="tab-page" hidden><div id="settingsRoot"></div></section>
 
 <section id="editorPage" class="tab-page">
-  <div class="editor-shell" id="editorShell">
+  <div class="editor-shell fullscreen" id="editorShell">
     <div class="editor-toolbar">
       <div class="et-row et-file-row">
        <select id="editorFileSelect" class="editor-file-select"></select>
