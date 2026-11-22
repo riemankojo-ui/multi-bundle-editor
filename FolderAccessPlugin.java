@@ -30,12 +30,12 @@ import java.io.OutputStream;
 @CapacitorPlugin(name = "FolderAccess")
 public class FolderAccessPlugin extends Plugin {
 
+    // Step 1: only opens the "save as" dialog. No file data is sent with this call.
     @PluginMethod
     public void saveAs(PluginCall call) {
         String name = call.getString("name");
-        String data = call.getString("data");
-        if (name == null || data == null) {
-            call.reject("name and data required");
+        if (name == null) {
+            call.reject("name required");
             return;
         }
         String mime = call.getString("mime", "application/octet-stream");
@@ -54,10 +54,17 @@ public class FolderAccessPlugin extends Plugin {
             return;
         }
         Uri uri = result.getData().getData();
+        String data = call.getString("data");
+        if (data == null) {
+            JSObject ret = new JSObject();
+            ret.put("uri", uri.toString());
+            call.resolve(ret);
+            return;
+        }
+        // Old style (small files): data was sent together with the call.
         boolean b64 = Boolean.TRUE.equals(call.getBoolean("base64", false));
         OutputStream out = null;
         try {
-            String data = call.getString("data");
             out = getContext().getContentResolver().openOutputStream(uri, "wt");
             byte[] bytes = b64 ? Base64.decode(data, Base64.DEFAULT) : data.getBytes("UTF-8");
             out.write(bytes);
@@ -73,6 +80,67 @@ public class FolderAccessPlugin extends Plugin {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    // Steps 2-4: write the chosen file in small pieces.
+    private OutputStream saveOut;
+
+    private void closeSaveOut() {
+        try {
+            if (saveOut != null) saveOut.close();
+        } catch (Exception ignored) {
+        }
+        saveOut = null;
+    }
+
+    @PluginMethod
+    public void writeStart(PluginCall call) {
+        closeSaveOut();
+        String u = call.getString("uri");
+        if (u == null) {
+            call.reject("uri required");
+            return;
+        }
+        try {
+            saveOut = getContext().getContentResolver().openOutputStream(Uri.parse(u), "wt");
+            if (saveOut == null) {
+                call.reject("could not open the file");
+                return;
+            }
+            call.resolve();
+        } catch (Exception e) {
+            call.reject(String.valueOf(e.getMessage()));
+        }
+    }
+
+    @PluginMethod
+    public void writeChunk(PluginCall call) {
+        if (saveOut == null) {
+            call.reject("no file is open");
+            return;
+        }
+        String data = call.getString("data");
+        if (data == null) {
+            call.reject("data required");
+            return;
+        }
+        try {
+            saveOut.write(Base64.decode(data, Base64.DEFAULT));
+            call.resolve();
+        } catch (Exception e) {
+            closeSaveOut();
+            call.reject(String.valueOf(e.getMessage()));
+        }
+    }
+
+    @PluginMethod
+    public void writeEnd(PluginCall call) {
+        try {
+            if (saveOut != null) saveOut.flush();
+        } catch (Exception ignored) {
+        }
+        closeSaveOut();
+        call.resolve();
     }
 
     @PluginMethod

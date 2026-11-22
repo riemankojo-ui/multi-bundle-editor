@@ -12,7 +12,7 @@ if not os.path.isfile(logo_path):
     print('mbicons: no logo.png, keeping default icons')
     sys.exit(0)
 
-SOFT = (232, 229, 222)      # soft warm white for the splash symbol
+SOFT = (201, 198, 190)      # soft warm white for the splash symbol
 SPLASH_BG = '#15161a'       # same as the app header
 
 logo = Image.open(logo_path).convert('RGB')
@@ -24,7 +24,20 @@ lo, hi = bg[2], fg[2]
 alpha = logo.split()[2].point(
     lambda v: max(0, min(255, int((v - lo) * 255 / max(1, hi - lo)))))
 box = alpha.point(lambda v: 255 if v > 24 else 0).getbbox()
-glyph = alpha.crop(box)
+# Draw the </> as sharp vector shapes so it is never blurry or jagged
+SHAPES = [
+    [(0.3452, 0.1279), (0.3756, 0.3256), (0.0254, 0.6047), (0.0, 0.4419)],
+    [(0.1827, 0.5465), (0.3756, 0.6512), (0.3706, 0.8721), (0.0254, 0.6628)],
+    [(0.5533, 0.0), (0.6396, 0.0), (0.4620, 0.985), (0.3756, 0.985)],
+    [(0.6294, 0.1395), (0.9594, 0.3372), (0.8071, 0.4535), (0.6345, 0.3605)],
+    [(0.6294, 0.6628), (0.9695, 0.4186), (1.0, 0.6047), (0.6294, 0.8837)],
+]
+GW, GH, SS = 1600, 698, 4
+big = Image.new('L', (GW * SS, GH * SS), 0)
+dr = ImageDraw.Draw(big)
+for poly in SHAPES:
+    dr.polygon([(x * (GW * SS - 1), y * (GH * SS - 1)) for x, y in poly], fill=255)
+glyph = big.resize((GW, GH), Image.LANCZOS)
 
 
 def glyph_layer(size, frac, color, base=None):

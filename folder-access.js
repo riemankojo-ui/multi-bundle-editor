@@ -62,76 +62,37 @@
       r.readAsDataURL(blob);
     });
   }
-  if (native) {
-    var origClick = HTMLAnchorElement.prototype.click;
-    HTMLAnchorElement.prototype.click = function () {
-      var a = this;
-      if (a.hasAttribute('download') && a.href && a.href.indexOf('blob:') === 0) {
-        var name = a.getAttribute('download') || 'file';
-        fetch(a.href).then(function (r) { return r.blob(); }).then(function (blob) {
-          return blobToBase64(blob).then(function (b64) {
-            return P.saveAs({ name: name, data: b64, base64: true, mime: blob.type || 'application/octet-stream' });
-          });
-        }).then(function () {
-          if (window.showToast) window.showToast('Saved ' + name, 'success');
-        }).catch(function (err) {
-          var m = String(err && err.message || err);
-          if (m !== 'cancelled' && window.showToast) window.showToast('Could not save file', 'error');
-        });
-        return;
+
+  // Save a file on the phone. The save dialog is opened first with NO file data attached
+  // (Android keeps the data of a call that opens a dialog, and a big file made it fail).
+  // Then the file is written in small pieces.
+  var CHUNK = 3 * 128 * 1024; // bytes per piece
+  async function saveBlobNative(name, blob) {
+    var r = await P.saveAs({ name: name, mime: blob.type || 'application/octet-stream' });
+    await P.writeStart({ uri: r.uri });
+    try {
+      for (var i = 0; i < blob.size; i += CHUNK) {
+        await P.writeChunk({ data: await blobToBase64(blob.slice(i, i + CHUNK)) });
       }
-      return origClick.apply(this, arguments);
-    };
+    } finally {
+      await P.writeEnd({});
+    }
   }
 
-  function blobToBase64(blob) {
-    return new Promise(function (resolve, reject) {
-      var r = new FileReader();
-      r.onload = function () { resolve(String(r.result).split(',')[1] || ''); };
-      r.onerror = function () { reject(r.error); };
-      r.readAsDataURL(blob);
-    });
-  }
-  if (native) {
-    var origClick = HTMLAnchorElement.prototype.click;
-    HTMLAnchorElement.prototype.click = function () {
-      var a = this;
-      if (a.hasAttribute('download') && a.href && a.href.indexOf('blob:') === 0) {
-        var name = a.getAttribute('download') || 'file';
-        fetch(a.href).then(function (r) { return r.blob(); }).then(function (blob) {
-          return blobToBase64(blob).then(function (b64) {
-            return P.saveAs({ name: name, data: b64, base64: true, mime: blob.type || 'application/octet-stream' });
-          });
-        }).then(function () {
-          if (window.showToast) window.showToast('Saved ' + name, 'success');
-        }).catch(function (err) {
-          var m = String(err && err.message || err);
-          if (m !== 'cancelled' && window.showToast) window.showToast('Could not save file', 'error');
-        });
-        return;
-      }
-      return origClick.apply(this, arguments);
-    };
-  }
-
-  var prevClick = HTMLAnchorElement.prototype.click;
+  // Every "download" link (TXT, ZIP, backups...) goes through here.
+  var plainClick = HTMLAnchorElement.prototype.click;
   HTMLAnchorElement.prototype.click = function () {
     var a = this;
     var isDl = a.hasAttribute('download') && a.href && a.href.indexOf('blob:') === 0;
-    if (!isDl) return prevClick.apply(this, arguments);
+    if (!isDl) return plainClick.apply(this, arguments);
     var name = a.getAttribute('download') || 'file';
     fetch(a.href).then(function (r) { return r.blob(); }).then(function (blob) {
-      var mime = blob.type || 'application/octet-stream';
-      if (P) {
-        return blobToBase64(blob).then(function (b64) {
-          return P.saveAs({ name: name, data: b64, base64: true, mime: mime });
-        });
-      }
-      var file = new File([blob], name, { type: mime });
+      if (P) return saveBlobNative(name, blob);
+      var file = new File([blob], name, { type: blob.type || 'application/octet-stream' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         return navigator.share({ files: [file], title: name });
       }
-      return prevClick.call(a);
+      return plainClick.call(a);
     }).then(function () {
       if (window.showToast) window.showToast('Saved ' + name, 'success');
     }).catch(function (err) {
