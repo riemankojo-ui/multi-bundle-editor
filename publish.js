@@ -556,11 +556,11 @@ async function runPublish(){
       '<button class="pb-go" id="pbDone">Done</button></div>';
     var d=$('pbDone');if(d)d.onclick=closeSheet;
     initLive();
-    toast('Published to GitHub','success');if(window.mbBar&&window.mbBar.refresh)window.mbBar.refresh();
+    toast('Published to GitHub','success');try{if(window.FolderAccess&&FolderAccess.notify)FolderAccess.notify('Published to GitHub',res.count+' file'+(res.count===1?'':'s')+' sent to '+S.scan.repo+' ('+S.scan.branch+')')}catch(_n){}if(window.mbBar&&window.mbBar.refresh)window.mbBar.refresh();
     if(window.mbBar)window.mbBar.done();
     /* reload only when Done is tapped */
     S.busy=false;
-  }catch(e){if(window.mbBar)window.mbBar.done();S.busy=false;setStatus('');setNote(explain(e,true),'bad');updateGo()}
+  }catch(e){if(window.mbBar)window.mbBar.done();S.busy=false;setStatus('');setNote(explain(e,true),'bad');updateGo();try{if(window.FolderAccess&&FolderAccess.notify)FolderAccess.notify('Publish failed',String(explain(e,true)).replace(/<[^>]*>/g,'').slice(0,120))}catch(_n){}}
 }
 function settingsRepo(){try{return JSON.parse(localStorage.getItem('mb_deploy_'+pid())||'null')||{}}catch(e){return {}}}
 function logoBox(p){

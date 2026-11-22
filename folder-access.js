@@ -146,6 +146,10 @@
     loadFolder: loadFolder,
     saveFile: saveFile,
     saveNewFile: saveNewFile,
-    lastFolderUri: lastFolderUri
+    lastFolderUri: lastFolderUri,
+    notify: function (title, body) {
+      if (!native || !P || !P.showNotification) return Promise.resolve();
+      return P.showNotification({ title: title, body: body }).catch(function () {});
+    }
   };
 })();

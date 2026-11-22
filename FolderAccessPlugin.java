@@ -1,6 +1,12 @@
 package com.multibundle.app;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.os.Build;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -242,6 +248,29 @@ public class FolderAccessPlugin extends Plugin {
             JSObject ret = new JSObject();
             ret.put("uri", created.toString());
             call.resolve(ret);
+        } catch (Exception e) {
+            call.reject(String.valueOf(e.getMessage()));
+        }
+    }
+
+    @PluginMethod
+    public void showNotification(PluginCall call) {
+        String title = call.getString("title", "Multi Bundle");
+        String body = call.getString("body", "");
+        try {
+            Context ctx = getContext();
+            NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (Build.VERSION.SDK_INT >= 26) {
+                nm.createNotificationChannel(new NotificationChannel("mb_publish", "GitHub publish", NotificationManager.IMPORTANCE_DEFAULT));
+            }
+            Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, "mb_publish") : new Notification.Builder(ctx);
+            b.setContentTitle(title).setContentText(body).setSmallIcon(android.R.drawable.stat_sys_upload_done).setAutoCancel(true);
+            Intent open = ctx.getPackageManager().getLaunchIntentForPackage(ctx.getPackageName());
+            if (open != null) {
+                b.setContentIntent(PendingIntent.getActivity(ctx, 0, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+            }
+            nm.notify((int) (System.currentTimeMillis() & 0x7fffffff), b.build());
+            call.resolve();
         } catch (Exception e) {
             call.reject(String.valueOf(e.getMessage()));
         }
