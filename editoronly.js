@@ -24,6 +24,19 @@
     }
     return '#0d0e12';
   }
+  // Switch project: opens the same Projects list as the full app (cards with Preview / Edit / Sync).
+  // Tap Edit on a card and you come straight back to the editor with that project.
+  function addSwitch() {
+    var row = document.querySelector('.et-file-row');
+    if (!row || document.getElementById('editorProjectsBtn')) return;
+    var b = document.createElement('button');
+    b.id = 'editorProjectsBtn'; b.className = 'editor-btn small';
+    b.title = 'Projects'; b.setAttribute('aria-label', 'Projects');
+    b.style.cssText = 'height:42px;min-width:42px;flex-shrink:0;border-radius:10px';
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
+    b.onclick = function (e) { e.stopPropagation(); if (typeof window.showTab === 'function') window.showTab('projects'); };
+    row.insertBefore(b, row.firstChild);
+  }
   var lastBars = '';
   function bars() {
     try {
@@ -36,6 +49,6 @@
   }
   setInterval(bars, 700);
   window.addEventListener('load', function () { setTimeout(bars, 300); });
-  document.addEventListener('DOMContentLoaded', wrap);
-  window.addEventListener('load', function () { wrap(); full(); });
+  document.addEventListener('DOMContentLoaded', function () { wrap(); addSwitch(); });
+  window.addEventListener('load', function () { wrap(); addSwitch(); full(); });
 })();
